@@ -1,1 +1,914 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شيكس - أفضل العروض في مصر</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #2563EB;
+  --blue-dark: #1d4ed8;
+  --blue-light: #eff6ff;
+  --orange: #f97316;
+  --orange-dark: #ea6c09;
+  --orange-light: #fff7ed;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-800: #1e293b;
+  --white: #ffffff;
+  --radius: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  color: var(--gray-800);
+  background: var(--white);
+  direction: rtl;
+}
+
+/* ===== NAV ===== */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 68px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; cursor: pointer;
+}
+.nav-logo img { height: 38px; width: auto; }
+.nav-logo-text {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 800; font-size: 22px; color: var(--blue);
+}
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+  padding: 7px 16px; border-radius: 8px;
+  text-decoration: none; font-size: 14px; font-weight: 600;
+  color: var(--gray-600); transition: all 0.2s; cursor: pointer;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--blue); background: var(--blue-light);
+}
+.btn-nav-cta {
+  background: var(--orange); color: white;
+  border: none; padding: 10px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  transition: all 0.2s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-nav-cta:hover { background: var(--orange-dark); transform: translateY(-1px); }
+.hamburger { display: none; background: none; border: none; font-size: 24px; cursor: pointer; }
+
+/* ===== PAGES ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== HERO ===== */
+.hero {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #7c3aed 100%);
+  min-height: 560px;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 60px 32px;
+}
+.hero-shapes {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.hero-shape {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.hero-shape-1 { width: 500px; height: 500px; top: -100px; left: -150px; }
+.hero-shape-2 { width: 300px; height: 300px; bottom: -80px; right: 10%; }
+.hero-shape-3 { width: 150px; height: 150px; top: 40%; left: 30%; }
+.hero-content {
+  position: relative; z-index: 2;
+  max-width: 600px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.15); color: white;
+  padding: 7px 16px; border-radius: 30px; font-size: 13px; font-weight: 600;
+  margin-bottom: 24px; backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.hero-badge::before { content: '✦'; color: var(--orange); }
+.hero h1 {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 54px; font-weight: 800; color: white; line-height: 1.2;
+  margin-bottom: 20px;
+}
+.hero h1 span { color: var(--orange); }
+.hero p {
+  font-size: 17px; color: rgba(255,255,255,0.85); line-height: 1.8;
+  margin-bottom: 36px; max-width: 480px;
+}
+.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn-hero-primary {
+  background: var(--orange); color: white;
+  border: none; padding: 14px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba(249,115,22,0.4);
+}
+.btn-hero-primary:hover { background: var(--orange-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(249,115,22,0.5); }
+.btn-hero-secondary {
+  background: rgba(255,255,255,0.15); color: white;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  padding: 14px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
+  text-decoration: none; backdrop-filter: blur(8px);
+  transition: all 0.25s;
+}
+.btn-hero-secondary:hover { background: rgba(255,255,255,0.25); }
+.hero-stats {
+  display: flex; gap: 36px; margin-top: 48px;
+}
+.hero-stat { color: rgba(255,255,255,0.9); }
+.hero-stat-val { font-family: 'Tajawal', sans-serif; font-size: 28px; font-weight: 800; color: white; display: block; }
+.hero-stat-lbl { font-size: 13px; color: rgba(255,255,255,0.65); }
+
+/* ===== SECTIONS ===== */
+.section-wrap { padding: 64px 32px; max-width: 1240px; margin: 0 auto; }
+.section-header { margin-bottom: 40px; }
+.section-tag {
+  display: inline-block; font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--orange); background: var(--orange-light);
+  padding: 5px 14px; border-radius: 30px; margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 36px; font-weight: 800; color: var(--gray-800); margin-bottom: 8px;
+}
+.section-sub { font-size: 15px; color: var(--gray-600); }
+.section-header-row {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+}
+
+/* ===== FILTERS ===== */
+.filters {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;
+}
+.filter-pill {
+  padding: 8px 20px; border-radius: 30px;
+  border: 1.5px solid var(--gray-200); font-size: 13px; font-weight: 600;
+  cursor: pointer; background: white; color: var(--gray-600);
+  font-family: 'Cairo', sans-serif; transition: all 0.2s;
+}
+.filter-pill.active, .filter-pill:hover {
+  background: var(--blue); color: white; border-color: var(--blue);
+}
+
+/* ===== DEALS GRID ===== */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 22px;
+}
+.deal-card {
+  border: 1px solid var(--gray-200); border-radius: var(--radius);
+  overflow: hidden; background: white; transition: all 0.3s;
+  position: relative;
+}
+.deal-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(37,99,235,0.12);
+  border-color: transparent;
+}
+.deal-img {
+  height: 170px; background: var(--gray-100);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; font-size: 48px;
+}
+.deal-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.deal-card:hover .deal-img img { transform: scale(1.05); }
+.badge-hot {
+  position: absolute; top: 12px; right: 12px;
+  background: #ef4444; color: white; font-size: 11px; font-weight: 800;
+  padding: 4px 10px; border-radius: 6px;
+  font-family: 'Cairo', sans-serif;
+}
+.badge-discount {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--blue); color: white; font-size: 16px; font-weight: 800;
+  padding: 5px 12px; border-radius: 8px;
+  font-family: 'Tajawal', sans-serif;
+}
+.deal-body { padding: 18px; }
+.deal-cat {
+  font-size: 11px; font-weight: 700; color: var(--orange);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+.deal-name { font-weight: 800; font-size: 16px; margin-bottom: 8px; line-height: 1.3; }
+.deal-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 10px; line-height: 1.5; }
+.deal-location {
+  font-size: 12px; color: var(--gray-400); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 4px;
+}
+.btn-claim {
+  width: 100%; background: var(--blue); color: white;
+  border: none; padding: 11px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s;
+}
+.btn-claim:hover { background: var(--blue-dark); }
+
+/* ===== BLOG GRID ===== */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+.blog-card {
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--gray-200); background: white; transition: all 0.3s;
+}
+.blog-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.09); }
+.blog-img {
+  height: 200px; background: var(--gray-100);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; font-size: 56px;
+}
+.blog-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.blog-card:hover .blog-img img { transform: scale(1.04); }
+.blog-label {
+  position: absolute; bottom: 12px; right: 12px;
+  background: rgba(0,0,0,0.65); color: white;
+  font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+.blog-body { padding: 20px; }
+.blog-body h3 { font-size: 16px; font-weight: 800; margin-bottom: 10px; line-height: 1.5; }
+.blog-body p { font-size: 13px; color: var(--gray-600); line-height: 1.7; margin-bottom: 16px; }
+.read-more {
+  color: var(--blue); font-size: 13px; font-weight: 700;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  transition: gap 0.2s;
+}
+.read-more:hover { gap: 10px; }
+
+/* ===== CTA BANNER ===== */
+.cta-banner {
+  background: linear-gradient(135deg, var(--blue) 0%, #7c3aed 100%);
+  border-radius: 24px; padding: 64px 48px;
+  text-align: center; margin: 0 32px 64px; color: white;
+  position: relative; overflow: hidden;
+}
+.cta-banner::before {
+  content: ''; position: absolute;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  top: -150px; left: -100px;
+}
+.cta-banner h2 {
+  font-family: 'Tajawal', sans-serif; font-size: 38px; font-weight: 800;
+  margin-bottom: 14px; position: relative;
+}
+.cta-banner p { font-size: 17px; opacity: 0.85; margin-bottom: 32px; position: relative; }
+.btn-cta-white {
+  background: white; color: var(--blue);
+  border: none; padding: 14px 32px; border-radius: 12px;
+  font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Cairo', sans-serif;
+  text-decoration: none; display: inline-block; transition: all 0.2s; position: relative;
+}
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+/* ===== PARTNERS PAGE ===== */
+.partners-hero {
+  background: linear-gradient(135deg, var(--blue) 0%, #7c3aed 100%);
+  padding: 80px 32px; text-align: center; color: white; position: relative; overflow: hidden;
+}
+.partners-hero h1 { font-family: 'Tajawal', sans-serif; font-size: 48px; font-weight: 800; margin-bottom: 16px; }
+.partners-hero p { font-size: 18px; opacity: 0.85; }
+.features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.feature-card {
+  background: white; border: 1px solid var(--gray-200); border-radius: var(--radius);
+  padding: 28px; display: flex; gap: 18px; align-items: flex-start;
+  transition: all 0.2s;
+}
+.feature-card:hover { box-shadow: 0 8px 24px rgba(37,99,235,0.1); border-color: var(--blue-light); }
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--blue-light); display: flex; align-items: center;
+  justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.feature-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+.feature-card p { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+/* ===== FORM ===== */
+.form-wrap { max-width: 680px; margin: 0 auto; padding: 64px 32px; }
+.form-wrap h2 { font-family: 'Tajawal', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 8px; text-align: center; }
+.form-wrap .sub { text-align: center; color: var(--gray-600); margin-bottom: 36px; font-size: 15px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.fg.full { grid-column: 1/-1; }
+.fg label { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+.fg input, .fg select, .fg textarea {
+  border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 14px;
+  font-size: 14px; font-family: 'Cairo', sans-serif; outline: none;
+  transition: border 0.2s; background: var(--gray-50);
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus {
+  border-color: var(--blue); background: white;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.fg textarea { min-height: 130px; resize: vertical; }
+.btn-submit {
+  width: 100%; background: var(--blue); color: white;
+  border: none; padding: 14px; border-radius: 12px;
+  font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px;
+  font-family: 'Cairo', sans-serif; transition: background 0.2s;
+}
+.btn-submit:hover { background: var(--blue-dark); }
+
+/* ===== CONTACT PAGE ===== */
+.contact-hero {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 40%, #1d4ed8 100%);
+  padding: 72px 32px; text-align: center; color: white;
+}
+.contact-hero h1 { font-family: 'Tajawal', sans-serif; font-size: 44px; font-weight: 800; margin-bottom: 14px; }
+.contact-hero p { font-size: 17px; opacity: 0.85; }
+.contact-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  max-width: 860px; margin: -32px auto 0; padding: 0 32px;
+}
+.contact-card {
+  background: white; border-radius: 14px; padding: 28px 20px;
+  text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+}
+.contact-card-icon { font-size: 30px; margin-bottom: 10px; }
+.contact-card-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); margin-bottom: 6px; }
+.contact-card-val { font-size: 14px; font-weight: 800; color: var(--gray-800); }
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 960px; margin: 64px auto; padding: 0 32px; }
+.contact-info h3 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+.contact-info p { font-size: 14px; color: var(--gray-600); line-height: 1.8; margin-bottom: 24px; }
+.social-row { display: flex; gap: 10px; }
+.social-btn {
+  width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid var(--gray-200);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; color: var(--gray-600);
+}
+.social-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.hours-box { background: var(--gray-50); border-radius: 12px; padding: 18px; margin-top: 24px; border: 1px solid var(--gray-200); }
+.hours-box h4 { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+.hours-box p { font-size: 13px; color: var(--gray-600); line-height: 1.8; }
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--gray-800); color: white;
+  padding: 56px 32px 24px;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; max-width: 1240px; margin: 0 auto 48px; }
+.footer-logo img { height: 36px; width: auto; margin-bottom: 14px; }
+.footer-brand p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.8; }
+.footer-col h4 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 13px; color: rgba(255,255,255,0.65); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; cursor: pointer; }
+.footer-col a:hover { color: white; }
+.footer-col p { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 8px; }
+.footer-bottom {
+  max-width: 1240px; margin: 0 auto; padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-bottom p { font-size: 12px; color: rgba(255,255,255,0.3); }
+.footer-bottom-links { display: flex; gap: 20px; }
+.footer-bottom-links a { font-size: 12px; color: rgba(255,255,255,0.3); text-decoration: none; cursor: pointer; }
+.footer-bottom-links a:hover { color: white; }
+
+/* ===== SKELETON ===== */
+.skeleton { background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%); background-size: 200% 100%; border-radius: var(--radius); animation: shimmer 1.5s infinite; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk-deal { height: 300px; }
+.sk-blog { height: 360px; }
+
+/* ===== EMPTY ===== */
+.empty-state { text-align: center; padding: 64px 20px; color: var(--gray-400); grid-column: 1/-1; }
+.empty-state .icon { font-size: 52px; margin-bottom: 14px; }
+.empty-state p { font-size: 15px; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 24px; left: 24px; z-index: 999;
+  background: var(--gray-800); color: white; padding: 14px 22px; border-radius: 12px;
+  font-size: 14px; font-weight: 600; display: none; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2); font-family: 'Cairo', sans-serif;
+}
+.toast.show { display: flex; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== VIEWALL BTN ===== */
+.btn-viewall {
+  border: 1.5px solid var(--blue); color: var(--blue); background: white;
+  padding: 11px 26px; border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Cairo', sans-serif; transition: all 0.2s;
+}
+.btn-viewall:hover { background: var(--blue); color: white; }
+.center-wrap { text-align: center; margin-top: 44px; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+  .hero { padding: 48px 16px; }
+  .hero h1 { font-size: 34px; }
+  .hero-stats { gap: 24px; }
+  .section-wrap { padding: 48px 16px; }
+  .deals-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .cta-banner { margin: 0 16px 48px; padding: 40px 24px; }
+  .cta-banner h2 { font-size: 26px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .contact-cards { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .partners-hero h1 { font-size: 30px; }
+}
+@media(max-width:480px){
+  .deals-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 28px; }
+  .hero-stats { flex-wrap: wrap; gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')">
+    <img src="logo.png" alt="شيكس" onerror="this.style.display='none';document.getElementById('logo-text').style.display='block'">
+    <span id="logo-text" class="nav-logo-text" style="display:none">شيكس</span>
+  </a>
+  <div class="nav-links">
+    <a class="active" id="nav-home" onclick="showPage('home')">الرئيسية</a>
+    <a id="nav-deals" onclick="showPage('deals')">العروض</a>
+    <a id="nav-blog" onclick="showPage('blog')">المدونة</a>
+    <a id="nav-partners" onclick="showPage('partners')">الشراكات</a>
+    <a id="nav-contact" onclick="showPage('contact')">تواصل معنا</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a class="btn-nav-cta" onclick="showPage('deals')">استكشف العروض ←</a>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobile-menu" style="display:none;position:fixed;top:68px;right:0;left:0;background:white;z-index:99;border-bottom:1px solid var(--gray-200);padding:16px;">
+  <a style="display:block;padding:12px 16px;font-weight:700;color:var(--gray-800);text-decoration:none;border-radius:8px;" onclick="showPage('home');toggleMenu()">🏠 الرئيسية</a>
+  <a style="display:block;padding:12px 16px;font-weight:700;color:var(--gray-800);text-decoration:none;border-radius:8px;" onclick="showPage('deals');toggleMenu()">🏷️ العروض</a>
+  <a style="display:block;padding:12px 16px;font-weight:700;color:var(--gray-800);text-decoration:none;border-radius:8px;" onclick="showPage('blog');toggleMenu()">📝 المدونة</a>
+  <a style="display:block;padding:12px 16px;font-weight:700;color:var(--gray-800);text-decoration:none;border-radius:8px;" onclick="showPage('partners');toggleMenu()">🤝 الشراكات</a>
+  <a style="display:block;padding:12px 16px;font-weight:700;color:var(--gray-800);text-decoration:none;border-radius:8px;" onclick="showPage('contact');toggleMenu()">✉️ تواصل معنا</a>
+</div>
+
+<!-- ===== HOME ===== -->
+<div id="page-home" class="page active">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-shapes">
+      <div class="hero-shape hero-shape-1"></div>
+      <div class="hero-shape hero-shape-2"></div>
+      <div class="hero-shape hero-shape-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">منصتك الموثوقة للعروض</div>
+      <h1>اكتشف أفضل العروض في <span>مصر</span> مع شيكس</h1>
+      <p>خصومات حصرية من أفضل التجار المصريين وأحدث محتوى اللايف ستايل</p>
+      <div class="hero-btns">
+        <a class="btn-hero-primary" onclick="showPage('deals')">استكشف العروض الآن ←</a>
+        <a class="btn-hero-secondary" onclick="showPage('blog')">تصفح المحتوى</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-val" id="stat-deals-count">0+</span><span class="hero-stat-lbl">عرض نشط</span></div>
+        <div class="hero-stat"><span class="hero-stat-val" id="stat-blog-count">0+</span><span class="hero-stat-lbl">مقالة</span></div>
+        <div class="hero-stat"><span class="hero-stat-val">100%</span><span class="hero-stat-lbl">مجاناً</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured Deals -->
+  <div class="section-wrap">
+    <div class="section-header-row">
+      <div>
+        <div class="section-tag">أحدث العروض 🔥</div>
+        <h2 class="section-title">أفضل عروض اليوم</h2>
+        <p class="section-sub">خصومات حصرية من أفضل التجار في مصر</p>
+      </div>
+    </div>
+    <div id="home-deals" class="deals-grid">
+      <div class="skeleton sk-deal"></div>
+      <div class="skeleton sk-deal"></div>
+      <div class="skeleton sk-deal"></div>
+    </div>
+    <div class="center-wrap">
+      <a class="btn-viewall" onclick="showPage('deals')">عرض جميع العروض ←</a>
+    </div>
+  </div>
+
+  <!-- Blog Section -->
+  <div style="background:var(--gray-50);padding:64px 0;">
+    <div class="section-wrap" style="padding-top:0;padding-bottom:0;">
+      <div class="section-header-row">
+        <div>
+          <div class="section-tag">مدونة وتقارير</div>
+          <h2 class="section-title">نصائح التسوق واللايف ستايل</h2>
+          <p class="section-sub">نصائح احترافية وفلوجات ومحتوى مميز</p>
+        </div>
+      </div>
+      <div id="home-blog" class="blog-grid">
+        <div class="skeleton sk-blog"></div>
+        <div class="skeleton sk-blog"></div>
+      </div>
+      <div class="center-wrap" style="margin-top:36px;">
+        <a class="btn-viewall" onclick="showPage('blog')">استكشف كل المحتوى ←</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="padding:64px 0 0;">
+    <div class="cta-banner">
+      <div class="section-tag" style="background:rgba(255,255,255,0.2);color:white;margin-bottom:16px;">للتجار والشركات</div>
+      <h2>نمّي أعمالك مع شيكس</h2>
+      <p>انضم لمئات التجار المصريين وابدأ في الوصول لآلاف العملاء</p>
+      <a class="btn-cta-white" onclick="showPage('partners')">تواصل معنا الآن</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><img src="logo.png" alt="شيكس" onerror="this.outerHTML='<span style=\'font-family:Tajawal,sans-serif;font-weight:800;font-size:22px;color:white\'>شيكس</span>'"></div>
+        <p>أفضل العروض والخصومات في مصر.<br>مصدرك الموثوق للتسوق الذكي.</p>
+      </div>
+      <div class="footer-col">
+        <h4>روابط سريعة</h4>
+        <a onclick="showPage('home')">الرئيسية</a>
+        <a onclick="showPage('deals')">العروض</a>
+        <a onclick="showPage('blog')">المدونة</a>
+        <a onclick="showPage('partners')">الشراكات</a>
+        <a onclick="showPage('contact')">تواصل معنا</a>
+      </div>
+      <div class="footer-col">
+        <h4>تواصل معنا</h4>
+        <p>✉ hello@shekss.com</p>
+        <p>📞 01234567890</p>
+        <p>📍 القاهرة، مصر</p>
+      </div>
+      <div class="footer-col">
+        <h4>تابعنا</h4>
+        <div class="social-row">
+          <a class="social-btn">f</a>
+          <a class="social-btn">in</a>
+          <a class="social-btn">𝕏</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 شيكس. جميع الحقوق محفوظة.</p>
+      <div class="footer-bottom-links">
+        <a>سياسة الخصوصية</a>
+        <a>شروط الاستخدام</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ===== DEALS PAGE ===== -->
+<div id="page-deals" class="page">
+  <div style="background:linear-gradient(135deg,var(--blue) 0%,#7c3aed 100%);padding:64px 32px;text-align:center;color:white;">
+    <div class="section-tag" style="background:rgba(255,255,255,0.2);color:white;">جميع العروض</div>
+    <h1 style="font-family:'Tajawal',sans-serif;font-size:44px;font-weight:800;margin:12px 0 10px;">اكتشف عروضاً رائعة</h1>
+    <p style="font-size:17px;opacity:0.85;">خصومات حصرية من أفضل التجار في مصر</p>
+  </div>
+  <div class="section-wrap">
+    <div class="filters" id="deals-filters">
+      <button class="filter-pill active" onclick="filterDeals(this,'')">الكل</button>
+      <button class="filter-pill" onclick="filterDeals(this,'طعام')">🍔 طعام</button>
+      <button class="filter-pill" onclick="filterDeals(this,'تكنولوجيا')">💻 تكنولوجيا</button>
+      <button class="filter-pill" onclick="filterDeals(this,'أزياء')">👗 أزياء</button>
+      <button class="filter-pill" onclick="filterDeals(this,'جمال')">💄 جمال</button>
+      <button class="filter-pill" onclick="filterDeals(this,'منزل')">🏠 منزل</button>
+      <button class="filter-pill" onclick="filterDeals(this,'كافيهات')">☕ كافيهات</button>
+      <button class="filter-pill" onclick="filterDeals(this,'أحذية')">👟 أحذية</button>
+      <button class="filter-pill" onclick="filterDeals(this,'مواقع')">📍 مواقع</button>
+    </div>
+    <div id="all-deals" class="deals-grid">
+      <div class="skeleton sk-deal"></div>
+      <div class="skeleton sk-deal"></div>
+      <div class="skeleton sk-deal"></div>
+      <div class="skeleton sk-deal"></div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand"><div class="footer-logo"><img src="logo.png" alt="شيكس" onerror="this.outerHTML='<span style=\'font-family:Tajawal,sans-serif;font-weight:800;font-size:22px;color:white\'>شيكس</span>'"></div><p>أفضل العروض في مصر.</p></div>
+      <div class="footer-col"><h4>روابط سريعة</h4><a onclick="showPage('home')">الرئيسية</a><a onclick="showPage('deals')">العروض</a><a onclick="showPage('blog')">المدونة</a><a onclick="showPage('partners')">الشراكات</a><a onclick="showPage('contact')">تواصل معنا</a></div>
+      <div class="footer-col"><h4>تواصل معنا</h4><p>✉ hello@shekss.com</p><p>📞 01234567890</p><p>📍 القاهرة، مصر</p></div>
+      <div class="footer-col"><h4>تابعنا</h4><div class="social-row"><a class="social-btn">f</a><a class="social-btn">in</a><a class="social-btn">𝕏</a></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 شيكس. جميع الحقوق محفوظة.</p></div>
+  </footer>
+</div>
+
+<!-- ===== BLOG PAGE ===== -->
+<div id="page-blog" class="page">
+  <div style="background:linear-gradient(135deg,var(--blue) 0%,#7c3aed 100%);padding:64px 32px;text-align:center;color:white;">
+    <div class="section-tag" style="background:rgba(255,255,255,0.2);color:white;">مدونة ومحتوى</div>
+    <h1 style="font-family:'Tajawal',sans-serif;font-size:44px;font-weight:800;margin:12px 0 10px;">نصائح التسوق واللايف ستايل</h1>
+    <p style="font-size:17px;opacity:0.85;">نصائح احترافية وفلوجات من مصر</p>
+  </div>
+  <div class="section-wrap">
+    <div id="all-blog" class="blog-grid">
+      <div class="skeleton sk-blog"></div>
+      <div class="skeleton sk-blog"></div>
+      <div class="skeleton sk-blog"></div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand"><div class="footer-logo"><img src="logo.png" alt="شيكس" onerror="this.outerHTML='<span style=\'font-family:Tajawal,sans-serif;font-weight:800;font-size:22px;color:white\'>شيكس</span>'"></div><p>أفضل العروض في مصر.</p></div>
+      <div class="footer-col"><h4>روابط سريعة</h4><a onclick="showPage('home')">الرئيسية</a><a onclick="showPage('deals')">العروض</a><a onclick="showPage('blog')">المدونة</a><a onclick="showPage('partners')">الشراكات</a><a onclick="showPage('contact')">تواصل معنا</a></div>
+      <div class="footer-col"><h4>تواصل معنا</h4><p>✉ hello@shekss.com</p><p>📍 القاهرة، مصر</p></div>
+      <div class="footer-col"><h4>تابعنا</h4><div class="social-row"><a class="social-btn">f</a><a class="social-btn">in</a><a class="social-btn">𝕏</a></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 شيكس. جميع الحقوق محفوظة.</p></div>
+  </footer>
+</div>
+
+<!-- ===== PARTNERS PAGE ===== -->
+<div id="page-partners" class="page">
+  <div class="partners-hero">
+    <div class="section-tag" style="background:rgba(255,255,255,0.2);color:white;">للتجار والشركات</div>
+    <h1>نمّي أعمالك مع شيكس</h1>
+    <p style="font-size:18px;opacity:0.85;margin-top:12px;">انضم لمئات التجار المصريين وابدأ في الوصول لآلاف العملاء</p>
+  </div>
+  <div class="section-wrap">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div class="section-tag">لماذا تنضم إلينا؟</div>
+      <h2 class="section-title">مميزات الشراكة مع شيكس</h2>
+      <p class="section-sub">اكتشف فوائد الانضمام لأسرع منصة عروض تنمو في مصر</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">👥</div><div><h3>وصول لآلاف العملاء</h3><p>تواصل مع عملاء نشطين يبحثون عن أفضل العروض في مصر يومياً.</p></div></div>
+      <div class="feature-card"><div class="feature-icon">📈</div><div><h3>زيادة مبيعاتك</h3><p>زِد أرباحك من خلال العروض المستهدفة والظهور المميز في المنصة.</p></div></div>
+      <div class="feature-card"><div class="feature-icon">🎯</div><div><h3>تسويق موجّه</h3><p>اوصل للجمهور المناسب من خلال تصنيف العروض بالقطاعات.</p></div></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><div><h3>إعداد سهل وسريع</h3><p>ابدأ في دقائق من خلال لوحة تحكم بسيطة وسهلة الاستخدام.</p></div></div>
+    </div>
+  </div>
+  <div style="background:var(--gray-50);padding:64px 0;">
+    <div class="form-wrap">
+      <h2>ابدأ شراكتك معنا</h2>
+      <p class="sub">أرسل لنا تفاصيلك وسيتواصل معك فريقنا خلال يومين عمل</p>
+      <div class="form-row">
+        <div class="fg"><label>اسم الشركة / المحل *</label><input type="text" id="p-bname" placeholder="اسم نشاطك التجاري"></div>
+        <div class="fg"><label>اسم المسؤول *</label><input type="text" id="p-cname" placeholder="اسمك الكامل"></div>
+        <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="p-email" placeholder="email@example.com"></div>
+        <div class="fg"><label>رقم الهاتف</label><input type="tel" id="p-phone" placeholder="01xxxxxxxxx"></div>
+      </div>
+      <div class="fg"><label>رسالتك (اختياري)</label><textarea id="p-msg" placeholder="أخبرنا عن نشاطك التجاري وأهداف الشراكة..."></textarea></div>
+      <button class="btn-submit" onclick="submitPartner()">إرسال طلب الشراكة</button>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand"><div class="footer-logo"><img src="logo.png" alt="شيكس" onerror="this.outerHTML='<span style=\'font-family:Tajawal,sans-serif;font-weight:800;font-size:22px;color:white\'>شيكس</span>'"></div><p>أفضل العروض في مصر.</p></div>
+      <div class="footer-col"><h4>روابط سريعة</h4><a onclick="showPage('home')">الرئيسية</a><a onclick="showPage('deals')">العروض</a><a onclick="showPage('blog')">المدونة</a><a onclick="showPage('partners')">الشراكات</a><a onclick="showPage('contact')">تواصل معنا</a></div>
+      <div class="footer-col"><h4>تواصل معنا</h4><p>✉ hello@shekss.com</p><p>📍 القاهرة، مصر</p></div>
+      <div class="footer-col"><h4>تابعنا</h4><div class="social-row"><a class="social-btn">f</a><a class="social-btn">in</a><a class="social-btn">𝕏</a></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 شيكس. جميع الحقوق محفوظة.</p></div>
+  </footer>
+</div>
+
+<!-- ===== CONTACT PAGE ===== -->
+<div id="page-contact" class="page">
+  <div class="contact-hero">
+    <div class="section-tag" style="background:rgba(255,255,255,0.2);color:white;">تواصل معنا</div>
+    <h1>نحن هنا لمساعدتك</h1>
+    <p>هل لديك سؤال؟ راسلنا وسنرد عليك في أقرب وقت</p>
+  </div>
+  <div class="contact-cards">
+    <div class="contact-card"><div class="contact-card-icon">✉️</div><div class="contact-card-label">البريد الإلكتروني</div><div class="contact-card-val">hello@shekss.com</div></div>
+    <div class="contact-card"><div class="contact-card-icon">📞</div><div class="contact-card-label">الهاتف</div><div class="contact-card-val">01234567890</div></div>
+    <div class="contact-card"><div class="contact-card-icon">📍</div><div class="contact-card-label">الموقع</div><div class="contact-card-val">القاهرة، مصر</div></div>
+  </div>
+  <div class="contact-grid">
+    <div>
+      <div class="fg" style="margin-bottom:16px;"><label>اسمك *</label><input type="text" id="c-name" placeholder="اسمك الكامل"></div>
+      <div class="fg" style="margin-bottom:16px;"><label>البريد الإلكتروني *</label><input type="email" id="c-email" placeholder="email@example.com"></div>
+      <div class="fg" style="margin-bottom:16px;"><label>رسالتك *</label><textarea id="c-msg" placeholder="كيف يمكننا مساعدتك؟"></textarea></div>
+      <button class="btn-submit" onclick="submitContact()">إرسال الرسالة</button>
+    </div>
+    <div class="contact-info">
+      <h3>نحن هنا لمساعدتك</h3>
+      <p>سواء كان لديك سؤال عن عرض أو تريد الشراكة معنا، يسعدنا سماعك. فريقنا يرد خلال 24 ساعة.</p>
+      <h4 style="font-size:15px;font-weight:800;margin-bottom:10px;">تابعنا على السوشيال ميديا</h4>
+      <div class="social-row" style="margin-bottom:24px;">
+        <a class="social-btn">f</a>
+        <a class="social-btn">in</a>
+        <a class="social-btn">𝕏</a>
+      </div>
+      <div class="hours-box">
+        <h4>أوقات العمل</h4>
+        <p>الأحد – الخميس: 9 صباحاً – 6 مساءً<br>الجمعة – السبت: إجازة</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand"><div class="footer-logo"><img src="logo.png" alt="شيكس" onerror="this.outerHTML='<span style=\'font-family:Tajawal,sans-serif;font-weight:800;font-size:22px;color:white\'>شيكس</span>'"></div><p>أفضل العروض في مصر.</p></div>
+      <div class="footer-col"><h4>روابط سريعة</h4><a onclick="showPage('home')">الرئيسية</a><a onclick="showPage('deals')">العروض</a><a onclick="showPage('blog')">المدونة</a><a onclick="showPage('partners')">الشراكات</a><a onclick="showPage('contact')">تواصل معنا</a></div>
+      <div class="footer-col"><h4>تواصل معنا</h4><p>✉ hello@shekss.com</p><p>📍 القاهرة، مصر</p></div>
+      <div class="footer-col"><h4>تابعنا</h4><div class="social-row"><a class="social-btn">f</a><a class="social-btn">in</a><a class="social-btn">𝕏</a></div></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 شيكس. جميع الحقوق محفوظة.</p><div class="footer-bottom-links"><a>سياسة الخصوصية</a><a>شروط الاستخدام</a></div></div>
+  </footer>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script>
+// ===== SUPABASE =====
+const sb = supabase.createClient(
+  'https://xxsmdktshnysesxawyjq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g'
+);
+
+// ===== DEAL CARD =====
+function dealCard(d) {
+  const img = d.image
+    ? `<img src="${d.image}" alt="${d.name}" onerror="this.parentElement.innerHTML='🏷️'">`
+    : '🏷️';
+  const hot = d.status === 'hot' ? '<span class="badge-hot">عرض ساخن 🔥</span>' : '';
+  const loc = (d.governorate || d.city)
+    ? `<div class="deal-location">📍 ${d.governorate||''} ${d.city ? '/ '+d.city : ''}</div>` : '';
+  const link = d.online_link || d.link || '#';
+  return `
+    <div class="deal-card">
+      <div class="deal-img">${img}${hot}<span class="badge-discount">${d.discount}%</span></div>
+      <div class="deal-body">
+        <div class="deal-cat">${d.category || d.cat || ''}</div>
+        <div class="deal-name">${d.name}</div>
+        <div class="deal-desc">${d.description || ''}</div>
+        ${loc}
+        <button class="btn-claim" onclick="window.open('${link}','_blank')">احجز العرض ←</button>
+      </div>
+    </div>`;
+}
+
+// ===== BLOG CARD =====
+function blogCard(b) {
+  const img = b.image
+    ? `<img src="${b.image}" alt="${b.title}" onerror="this.parentElement.innerHTML='📝'">`
+    : '📝';
+  const preview = (b.content || '').slice(0, 110) + (b.content && b.content.length > 110 ? '...' : '');
+  return `
+    <div class="blog-card">
+      <div class="blog-img">${img}<span class="blog-label">${b.category || 'مدونة'}</span></div>
+      <div class="blog-body">
+        <h3>${b.title}</h3>
+        <p>${preview}</p>
+        <a class="read-more">اقرأ المزيد ←</a>
+      </div>
+    </div>`;
+}
+
+// ===== LOAD HOME =====
+async function loadHome() {
+  const [{ data: deals }, { data: blogs, count: bc }, { count: dc }] = await Promise.all([
+    sb.from('deals').select('*').order('created_at',{ascending:false}).limit(3),
+    sb.from('blogs').select('*', {count:'exact'}).eq('status','published').order('created_at',{ascending:false}).limit(2),
+    sb.from('deals').select('*', {count:'exact', head:true})
+  ]);
+
+  // Stats
+  if (dc) document.getElementById('stat-deals-count').textContent = dc + '+';
+  if (bc) document.getElementById('stat-blog-count').textContent = bc + '+';
+
+  // Deals
+  const dg = document.getElementById('home-deals');
+  dg.innerHTML = deals && deals.length
+    ? deals.map(dealCard).join('')
+    : '<div class="empty-state"><div class="icon">🏷️</div><p>لا توجد عروض بعد</p></div>';
+
+  // Blog
+  const bg = document.getElementById('home-blog');
+  bg.innerHTML = blogs && blogs.length
+    ? blogs.map(blogCard).join('')
+    : '<div class="empty-state"><div class="icon">📝</div><p>لا توجد مقالات بعد</p></div>';
+}
+
+// ===== ALL DEALS =====
+async function loadAllDeals(cat = '') {
+  const grid = document.getElementById('all-deals');
+  grid.innerHTML = '<div class="skeleton sk-deal"></div>'.repeat(4);
+  let q = sb.from('deals').select('*').order('created_at',{ascending:false});
+  if (cat) q = q.eq('category', cat);
+  const { data } = await q;
+  grid.innerHTML = data && data.length
+    ? data.map(dealCard).join('')
+    : '<div class="empty-state"><div class="icon">🏷️</div><p>لا توجد عروض في هذا القسم</p></div>';
+}
+
+function filterDeals(btn, cat) {
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAllDeals(cat);
+}
+
+// ===== ALL BLOG =====
+async function loadAllBlog() {
+  const grid = document.getElementById('all-blog');
+  grid.innerHTML = '<div class="skeleton sk-blog"></div>'.repeat(3);
+  const { data } = await sb.from('blogs').select('*').order('created_at',{ascending:false});
+  grid.innerHTML = data && data.length
+    ? data.map(blogCard).join('')
+    : '<div class="empty-state"><div class="icon">📝</div><p>لا توجد مقالات بعد</p></div>';
+}
+
+// ===== NAVIGATION =====
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const nav = document.getElementById('nav-' + page);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+  if (page === 'deals') loadAllDeals();
+  if (page === 'blog') loadAllBlog();
+}
+
+function toggleMenu() {
+  const m = document.getElementById('mobile-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+
+// ===== PARTNER FORM =====
+async function submitPartner() {
+  const bname = document.getElementById('p-bname').value.trim();
+  const email = document.getElementById('p-email').value.trim();
+  if (!bname || !email) { showToast('⚠️ برجاء ملء الحقول المطلوبة'); return; }
+  const { error } = await sb.from('messages').insert([{
+    name: document.getElementById('p-cname').value,
+    email,
+    type: 'شراكة',
+    msg: `الشركة: ${bname}\nالهاتف: ${document.getElementById('p-phone').value}\n${document.getElementById('p-msg').value}`,
+    read: false
+  }]);
+  if (error) showToast('❌ حدث خطأ، حاول مرة أخرى');
+  else showToast('✅ تم إرسال طلبك! سنتواصل معك خلال يومين');
+}
+
+// ===== CONTACT FORM =====
+async function submitContact() {
+  const name = document.getElementById('c-name').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const msg = document.getElementById('c-msg').value.trim();
+  if (!name || !email || !msg) { showToast('⚠️ برجاء ملء جميع الحقول'); return; }
+  const { error } = await sb.from('messages').insert([{ name, email, type:'استفسار', msg, read:false }]);
+  if (error) showToast('❌ حدث خطأ، حاول مرة أخرى');
+  else {
+    showToast('✅ تم إرسال رسالتك بنجاح!');
+    document.getElementById('c-name').value = '';
+    document.getElementById('c-email').value = '';
+    document.getElementById('c-msg').value = '';
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== INIT =====
+loadHome();
+</script>
+</body>
+</html>
 
