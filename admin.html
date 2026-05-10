@@ -3,67 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم شيكس - Shekss Admin</title>
+    <title>لوحة تحكم شيكس المطورة - Shekss Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; }
+        :root { --blue: #2563eb; --red: #ef4444; --dark: #0f172a; --bg: #f8fafc; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', sans-serif; }
         body { background: var(--bg); display: flex; min-height: 100vh; direction: rtl; }
         .sidebar { width: 260px; background: var(--dark); color: white; position: fixed; right: 0; height: 100vh; padding: 25px; }
-        .nav-btn { width: 100%; padding: 14px; background: none; border: none; color: #94a3b8; text-align: right; cursor: pointer; border-radius: 10px; margin-bottom: 10px; font-weight: 700; transition: 0.3s; }
-        .nav-btn.active { background: var(--blue); color: white; }
         .main { margin-right: 260px; flex: 1; padding: 40px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 30px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 700; color: #475569; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; outline: none; }
-        .btn-save { background: var(--blue); color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; width: 100%; font-size: 16px; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 700; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; outline: none; }
+        .btn-save { background: var(--blue); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 800; width: 100%; }
+        
+        /* تصميم الجدول */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; }
+        th { background: #f1f5f9; color: #64748b; }
+        .btn-delete { background: var(--red); color: white; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <aside class="sidebar">
     <h2 style="color:#38bdf8; text-align:center; margin-bottom:30px">Shekss Admin</h2>
-    <button class="nav-btn active" onclick="showTab('deals-tab', this)">🛍️ إدارة العروض</button>
-    <button class="nav-btn" onclick="showTab('blogs-tab', this)">📝 إدارة المدونة</button>
 </aside>
 
 <main class="main">
-    <div id="deals-tab" class="tab-content active">
-        <h1>إدارة عروض الخصم</h1>
-        <div class="card">
-            <div class="form-grid">
-                <div class="form-group"><label>اسم المحل</label><input type="text" id="d-name"></div>
-                <div class="form-group"><label>نسبة الخصم %</label><input type="number" id="d-discount"></div>
-                <div class="form-group"><label>المحافظة</label><select id="d-gov"></select></div>
-                <div class="form-group"><label>المركز</label><select id="d-city"><option>اختر المحافظة أولاً</option></select></div>
-            </div>
-            <div class="form-group"><label>وصف المنتج</label><textarea id="d-desc"></textarea></div>
-            <div class="form-group">
-                <label>صورة العرض</label>
-                <input type="file" accept="image/*" onchange="processImage(this, 'd-img-data')">
-                <input type="hidden" id="d-img-data">
-            </div>
-            <button class="btn-save" onclick="saveDeal()">حفظ العرض</button>
+    <h1>إدارة العروض والمدونة</h1>
+    
+    <div class="card">
+        <h3 style="margin-bottom:15px">إضافة عرض (أونلاين / أوفلاين)</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>اسم المحل</label><input type="text" id="d-name"></div>
+            <div class="form-group"><label>نسبة الخصم %</label><input type="number" id="d-discount"></div>
+            <div class="form-group"><label>المحافظة</label><select id="d-gov"></select></div>
+            <div class="form-group"><label>المركز</label><select id="d-city"><option>اختر المحافظة أولاً</option></select></div>
+            <div class="form-group"><label>لينك العرض (أونلاين)</label><input type="url" id="d-link" placeholder="https://..."></div>
+            <div class="form-group"><label>رابط الموقع (Google Maps)</label><input type="text" id="d-map" placeholder="رابط الخريطة للمحل"></div>
         </div>
+        <div class="form-group"><label>وصف المنتج</label><textarea id="d-desc"></textarea></div>
+        <button class="btn-save" onclick="saveDeal()">حفظ ونشر العرض</button>
     </div>
 
-    <div id="blogs-tab" class="tab-content">
-        <h1>إدارة المدونة</h1>
-        <div class="card">
-            <div class="form-group"><label>عنوان المقال</label><input type="text" id="b-title"></div>
-            <div class="form-group"><label>المحتوى</label><textarea id="b-content" style="height:200px"></textarea></div>
-            <div class="form-group">
-                <label>صورة الغلاف</label>
-                <input type="file" accept="image/*" onchange="processImage(this, 'b-img-data')">
-                <input type="hidden" id="b-img-data">
-            </div>
-            <button class="btn-save" style="background:#10b981" onclick="saveBlog()">نشر المقال</button>
-        </div>
+    <div class="card">
+        <h3 style="margin-bottom:15px">العروض الحالية (للحذف والتعديل)</h3>
+        <table id="deals-table">
+            <thead>
+                <tr>
+                    <th>المحل</th>
+                    <th>الخصم</th>
+                    <th>المكان</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="deals-list">
+                </tbody>
+        </table>
     </div>
 </main>
 
@@ -72,21 +71,42 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // القائمة الكاملة لمحافظات مصر
     const egyptData = {
-        "القاهرة": ["مدينة نصر", "المعادي", "التجمع"],
-        "الشرقية": ["فاقوس", "الزقازيق", "أبو حماد", "بلبيس"],
-        "الجيزة": ["الدقي", "أكتوبر", "المهندسين"]
+        "القاهرة": ["مدينة نصر", "المعادي", "التجمع", "حلوان", "شبرا"],
+        "الجيزة": ["الدقي", "أكتوبر", "الهرم", "المهندسين"],
+        "الأسكندرية": ["سموحة", "الرمل", "المنتزة", "محرم بك"],
+        "الشرقية": ["فاقوس", "الزقازيق", "بلبيس", "أبو حماد", "منيا القمح"],
+        "الدقهلية": ["المنصورة", "ميت غمر", "السنبلاوين"],
+        "الغربية": ["طنطا", "المحلة الكبرى"],
+        "المنوفية": ["شبين الكوم", "قويسنا"],
+        "البحيرة": ["دمنهور", "كفر الدوار"],
+        "كفر الشيخ": ["كفر الشيخ", "دسوق"],
+        "القليوبية": ["بنها", "شبرا الخيمة"],
+        "دمياط": ["دمياط", "رأس البر"],
+        "بورسعيد": ["حي العرب", "بورفؤاد"],
+        "الإسماعيلية": ["الإسماعيلية", "فايد"],
+        "السويس": ["حي السويس"],
+        "الفيوم": ["الفيوم"],
+        "بني سويف": ["بني سويف"],
+        "المنيا": ["المنيا"],
+        "أسيوط": ["أسيوط"],
+        "سوهاج": ["سوهاج"],
+        "قنا": ["قنا"],
+        "الأقصر": ["الأقصر"],
+        "أسوان": ["أسوان"],
+        "مطروح": ["مرسى مطروح"],
+        "البحر الأحمر": ["الغردقة", "سفاجا"],
+        "الوادي الجديد": ["الخارجة"],
+        "شمال سيناء": ["العريش"],
+        "جنوب سيناء": ["شرم الشيخ", "دهب"]
     };
 
-    // وظيفة تعبئة المحافظات مع تأمين
     function initGov() {
         const govSel = document.getElementById('d-gov');
-        if (!govSel) return;
         govSel.innerHTML = '<option value="">اختر محافظة</option>';
-        Object.keys(egyptData).forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g; opt.textContent = g;
-            govSel.appendChild(opt);
+        Object.keys(egyptData).sort().forEach(g => {
+            govSel.innerHTML += `<option value="${g}">${g}</option>`;
         });
         
         govSel.onchange = function() {
@@ -94,66 +114,56 @@
             citySel.innerHTML = '';
             if(egyptData[this.value]) {
                 egyptData[this.value].forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c; opt.textContent = c;
-                    citySel.appendChild(opt);
+                    citySel.innerHTML += `<option value="${c}">${c}</option>`;
                 });
             }
         };
-    }
-
-    function processImage(input, hiddenId) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => document.getElementById(hiddenId).value = e.target.result;
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function showTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
+        fetchDeals(); // تحميل العروض عند فتح الصفحة
     }
 
     async function saveDeal() {
-        try {
-            const data = {
-                name: document.getElementById('d-name').value,
-                governorate: document.getElementById('d-gov').value,
-                city: document.getElementById('d-city').value,
-                discount: parseInt(document.getElementById('d-discount').value) || 0,
-                description: document.getElementById('d-desc').value,
-                image: document.getElementById('d-img-data').value,
-                status: 'active'
-            };
-            const { error } = await _supabase.from('deals').insert([data]);
-            if(error) throw error;
-            alert("تم حفظ العرض!"); location.reload();
-        } catch (err) { alert("خطأ: " + err.message); }
+        const data = {
+            name: document.getElementById('d-name').value,
+            governorate: document.getElementById('d-gov').value,
+            city: document.getElementById('d-city').value,
+            discount: document.getElementById('d-discount').value,
+            description: document.getElementById('d-desc').value,
+            online_link: document.getElementById('d-link').value, // عمود جديد للينك
+            map_link: document.getElementById('d-map').value, // عمود جديد للخريطة
+            status: 'active'
+        };
+        const { error } = await _supabase.from('deals').insert([data]);
+        if(error) alert(error.message); else { alert("تم الحفظ!"); location.reload(); }
     }
 
-    async function saveBlog() {
-        try {
-            const data = {
-                title: document.getElementById('b-title').value,
-                content: document.getElementById('b-content').value,
-                image: document.getElementById('b-img-data').value,
-                author: 'محمد غريب'
-            };
-            const { error } = await _supabase.from('blogs').insert([data]);
-            if(error) throw error;
-            alert("تم نشر المقال!"); location.reload();
-        } catch (err) { alert("خطأ: " + err.message); }
+    // دالة لجلب العروض وعرضها في جدول
+    async function fetchDeals() {
+        const { data, error } = await _supabase.from('deals').select('*');
+        if (data) {
+            const list = document.getElementById('deals-list');
+            list.innerHTML = '';
+            data.forEach(deal => {
+                list.innerHTML += `
+                    <tr>
+                        <td>${deal.name}</td>
+                        <td>${deal.discount}%</td>
+                        <td>${deal.governorate}</td>
+                        <td><button class="btn-delete" onclick="deleteDeal(${deal.id})">حذف</button></td>
+                    </tr>
+                `;
+            });
+        }
     }
 
-    // تشغيل الكود بمجرد تحميل الصفحة
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initGov);
-    } else {
-        initGov();
+    // دالة لحذف عرض
+    async function deleteDeal(id) {
+        if(confirm("هل أنت متأكد من حذف هذا العرض؟")) {
+            const { error } = await _supabase.from('deals').delete().eq('id', id);
+            if(!error) location.reload();
+        }
     }
+
+    window.onload = initGov;
 </script>
 </body>
 </html>
