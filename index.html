@@ -3,96 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شيكس - عالم الخصومات</title>
+    <title>شيكس - Shekss | عالم العروض والمقالات</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', sans-serif; }
-        body { background: var(--bg); }
+        :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; --white: #ffffff; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', sans-serif; scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--dark); }
         
-        header { background: var(--dark); color: white; padding: 20px; text-align: center; }
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        /* Navbar */
+        nav { background: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-weight: 900; font-size: 24px; color: var(--blue); text-decoration: none; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: var(--dark); font-weight: 700; transition: 0.3s; }
+        .nav-links a:hover { color: var(--blue); }
+
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        h2 { font-weight: 900; margin-bottom: 30px; border-right: 5px solid var(--blue); padding-right: 15px; }
+
+        /* Grid System */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         
-        /* تصميم كروت العروض */
-        .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .deal-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; }
-        .deal-card:hover { transform: translateY(-5px); }
-        .deal-img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
-        .deal-info { padding: 20px; }
-        .deal-badge { background: #ff4757; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
-        .deal-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 5px; color: var(--dark); }
-        .deal-loc { color: #64748b; font-size: 0.9rem; margin-bottom: 15px; }
+        /* Deal & Blog Cards */
+        .card { background: var(--white); border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #eee; }
+        .card:hover { transform: translateY(-5px); }
+        .card-img { width: 100%; height: 200px; object-fit: contain; background: white; padding: 10px; } /* تطبيق الخلفية البيضاء */
+        .card-content { padding: 20px; }
+        .badge { background: #ff4757; color: white; padding: 4px 10px; border-radius: 5px; font-weight: 800; font-size: 14px; }
         
-        .btn-group { display: flex; gap: 10px; }
-        .btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
-        .btn-online { background: var(--blue); color: white; }
-        .btn-map { background: #f1f5f9; color: var(--dark); border: 1px solid #e2e8f0; }
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: 0.3s; }
+        .btn-main { background: var(--blue); color: white; }
+        .btn-alt { background: #f1f5f9; color: var(--dark); }
+
+        /* About Section */
+        .about-section { background: var(--dark); color: white; padding: 60px 20px; border-radius: 20px; text-align: center; margin: 60px 0; }
+        .about-section p { max-width: 800px; margin: 20px auto; line-height: 1.8; opacity: 0.9; }
+
+        footer { text-align: center; padding: 40px; color: #64748b; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Shekss - شيكس</h1>
-    <p>أقوى العروض والخصومات في مكان واحد</p>
-</header>
+<nav>
+    <a href="#" class="logo">SHEKSS</a>
+    <div class="nav-links">
+        <a href="#deals">العروض</a>
+        <a href="#blogs">المدونة</a>
+        <a href="#about">من نحن</a>
+    </div>
+</nav>
 
 <div class="container">
-    <h2 style="margin-bottom: 25px;">🔥 أحدث العروض</h2>
-    <div id="deals-container" class="deals-grid">
-        <p style="text-align: center; grid-column: 1/-1;">جاري تحميل العروض...</p>
-    </div>
+    <section id="deals">
+        <h2>🔥 أحدث العروض</h2>
+        <div id="deals-container" class="grid">
+            <p>جاري تحميل العروض...</p>
+        </div>
+    </section>
+
+    <section id="about" class="about-section">
+        <h2>من نحن</h2>
+        <p>شيكس (Shekss) هو منصتك الأولى في مصر للحصول على أفضل الخصومات الحصرية. نحن نربطك بأفضل المحلات التجارية سواء أونلاين أو في منطقتك، لضمان حصولك على أقل الأسعار وتوفير حقيقي في كل عملية شراء.</p>
+    </section>
+
+    <section id="blogs">
+        <h2>📝 مقالات تهمك</h2>
+        <div id="blogs-container" class="grid">
+            <p>جاري تحميل المقالات...</p>
+        </div>
+    </section>
 </div>
 
+<footer>
+    &copy; 2026 جميع الحقوق محفوظة لـ شيكس - محمد غريب
+</footer>
+
 <script>
-    // ربط سوبابيز (نفس المفاتيح اللي استخدمناها في الـ Admin)
     const SUPABASE_URL = 'https://xxsmdktshnysesxawyjq.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function loadDeals() {
-        const { data: deals, error } = await _supabase
-            .from('deals')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        const container = document.getElementById('deals-container');
-        
-        if (error) {
-            container.innerHTML = `<p>حدث خطأ أثناء تحميل العروض: ${error.message}</p>`;
-            return;
-        }
-
-        if (deals.length === 0) {
-            container.innerHTML = `<p style="text-align: center; grid-column: 1/-1;">لا توجد عروض متاحة حالياً.</p>`;
-            return;
-        }
-
-        container.innerHTML = ''; // مسح كلمة "جاري التحميل"
-        
-        deals.forEach(deal => {
-            container.innerHTML += `
-                <div class="deal-card">
-                    <img class="deal-img" src="${deal.image || 'https://via.placeholder.com/300x200?text=Shekss'}" alt="${deal.name}">
-                    <div class="deal-info">
-                        <span class="deal-badge">خصم ${deal.discount}%</span>
-                        <h3 class="deal-title">${deal.name}</h3>
-                        <p class="deal-loc">📍 ${deal.governorate} - ${deal.city}</p>
-                        <p style="font-size: 0.85rem; color: #444; margin-bottom: 15px;">${deal.description || ''}</p>
-                        
-                        <div class="btn-group">
-                            ${deal.online_link ? `<a href="${deal.online_link}" target="_blank" class="btn btn-online">شراء أونلاين</a>` : ''}
-                            ${deal.map_link ? `<a href="${deal.map_link}" target="_blank" class="btn btn-map">الموقع</a>` : ''}
+    async function loadData() {
+        // تحميل العروض
+        const { data: deals } = await _supabase.from('deals').select('*').order('created_at', { ascending: false });
+        const dContainer = document.getElementById('deals-container');
+        if (deals && deals.length > 0) {
+            dContainer.innerHTML = '';
+            deals.forEach(d => {
+                dContainer.innerHTML += `
+                    <div class="card">
+                        <img src="${d.image}" class="card-img" alt="${d.name}">
+                        <div class="card-content">
+                            <span class="badge">خصم ${d.discount}%</span>
+                            <h3 style="margin:10px 0">${d.name}</h3>
+                            <p style="color:#64748b; font-size:14px">📍 ${d.governorate} - ${d.city}</p>
+                            <div class="btn-group">
+                                ${d.online_link ? `<a href="${d.online_link}" class="btn btn-main">شراء أونلاين</a>` : ''}
+                                ${d.map_link ? `<a href="${d.map_link}" class="btn btn-alt">الموقع</a>` : ''}
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `;
-        });
+                    </div>`;
+            });
+        } else { dContainer.innerHTML = '<p>لا توجد عروض حالياً.</p>'; }
+
+        // تحميل المقالات
+        const { data: blogs } = await _supabase.from('blogs').select('*').order('created_at', { ascending: false });
+        const bContainer = document.getElementById('blogs-container');
+        if (blogs && blogs.length > 0) {
+            bContainer.innerHTML = '';
+            blogs.forEach(b => {
+                bContainer.innerHTML += `
+                    <div class="card">
+                        <img src="${b.image}" class="card-img" alt="${b.title}">
+                        <div class="card-content">
+                            <h3 style="margin-bottom:10px">${b.title}</h3>
+                            <p style="font-size:14px; color:#475569">${b.content.substring(0, 100)}...</p>
+                            <a href="#" style="color:var(--blue); font-weight:700; text-decoration:none; display:block; margin-top:15px">اقرأ المزيد ←</a>
+                        </div>
+                    </div>`;
+            });
+        } else { bContainer.innerHTML = '<p>قريباً سيتم نشر المقالات.</p>'; }
     }
 
-    // تشغيل الجلب عند التحميل
-    window.onload = loadDeals;
+    window.onload = loadData;
 </script>
-
 </body>
 </html>
