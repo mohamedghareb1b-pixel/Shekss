@@ -3,80 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شيكس - Shekss | عالم العروض والمقالات</title>
+    <title>شيكس - Shekss | أقوى العروض في مصر</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #2563eb; --dark: #0f172a; --bg: #f8fafc; --white: #ffffff; }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo', sans-serif; scroll-behavior: smooth; }
-        body { background: var(--bg); color: var(--dark); }
+        :root {
+            --blue: #2563EB;
+            --blue-dark: #1d4ed8;
+            --orange: #f97316;
+            --gray-100: #f1f5f9;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--white); color: var(--gray-800); scroll-behavior: smooth; }
+
+        /* NAV */
+        nav {
+            position: sticky; top: 0; z-index: 100; background: white;
+            border-bottom: 1px solid #eee; padding: 0 5%;
+            display: flex; align-items: center; justify-content: space-between; height: 70px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .nav-logo { font-weight: 900; font-size: 24px; color: var(--blue); text-decoration: none; }
+        .nav-links a { margin-right: 20px; text-decoration: none; color: var(--gray-600); font-weight: 700; font-size: 14px; }
+        .btn-explore { background: var(--orange); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #7c3aed 100%);
+            min-height: 500px; display: flex; align-items: center; color: white; padding: 0 5%; position: relative; overflow: hidden;
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 700px; }
+        .hero h1 { font-size: 48px; font-weight: 900; line-height: 1.2; margin-bottom: 20px; }
+        .hero p { font-size: 18px; opacity: 0.9; margin-bottom: 30px; }
+
+        /* SECTIONS */
+        section { padding: 60px 5%; max-width: 1300px; margin: 0 auto; }
+        .section-label { display: inline-block; font-size: 12px; font-weight: 800; color: var(--blue); background: #eff6ff; padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; }
+        h2.section-title { font-size: 32px; font-weight: 900; margin-bottom: 40px; }
+
+        /* DEALS GRID */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .card { border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: white; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.1); }
+        .card-img-wrap { height: 180px; background: white; display: flex; align-items: center; justify-content: center; position: relative; padding: 15px; }
+        .card-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; } /* لضمان الخلفية البيضاء */
+        .discount-badge { position: absolute; top: 10px; right: 10px; background: var(--blue); color: white; padding: 5px 12px; border-radius: 8px; font-weight: 900; }
         
-        /* Navbar */
-        nav { background: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { font-weight: 900; font-size: 24px; color: var(--blue); text-decoration: none; }
-        .nav-links a { margin-right: 20px; text-decoration: none; color: var(--dark); font-weight: 700; transition: 0.3s; }
-        .nav-links a:hover { color: var(--blue); }
+        .card-body { padding: 20px; }
+        .card-cat { font-size: 11px; font-weight: 800; color: var(--blue); margin-bottom: 8px; }
+        .card-title { font-size: 18px; font-weight: 900; margin-bottom: 10px; }
+        .card-loc { font-size: 13px; color: var(--gray-600); margin-bottom: 15px; }
 
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        h2 { font-weight: 900; margin-bottom: 30px; border-right: 5px solid var(--blue); padding-right: 15px; }
+        .btn-claim { width: 100%; background: var(--blue); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
 
-        /* Grid System */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        
-        /* Deal & Blog Cards */
-        .card { background: var(--white); border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #eee; }
-        .card:hover { transform: translateY(-5px); }
-        .card-img { width: 100%; height: 200px; object-fit: contain; background: white; padding: 10px; } /* تطبيق الخلفية البيضاء */
-        .card-content { padding: 20px; }
-        .badge { background: #ff4757; color: white; padding: 4px 10px; border-radius: 5px; font-weight: 800; font-size: 14px; }
-        
-        /* Buttons */
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: 0.3s; }
-        .btn-main { background: var(--blue); color: white; }
-        .btn-alt { background: #f1f5f9; color: var(--dark); }
-
-        /* About Section */
-        .about-section { background: var(--dark); color: white; padding: 60px 20px; border-radius: 20px; text-align: center; margin: 60px 0; }
-        .about-section p { max-width: 800px; margin: 20px auto; line-height: 1.8; opacity: 0.9; }
-
-        footer { text-align: center; padding: 40px; color: #64748b; font-size: 14px; }
+        /* FOOTER */
+        footer { background: var(--gray-100); padding: 40px 5%; text-align: center; font-size: 14px; color: var(--gray-600); margin-top: 60px; }
     </style>
 </head>
 <body>
 
 <nav>
-    <a href="#" class="logo">SHEKSS</a>
+    <a href="#" class="nav-logo">SHEKSS</a>
     <div class="nav-links">
         <a href="#deals">العروض</a>
-        <a href="#blogs">المدونة</a>
+        <a href="#blog">المدونة</a>
         <a href="#about">من نحن</a>
     </div>
+    <a href="#deals" class="btn-explore">استكشف العروض</a>
 </nav>
 
-<div class="container">
+<div id="page-home">
+    <div class="hero">
+        <div class="hero-content">
+            <h1>اكتشف أفضل العروض في مصر مع شيكس</h1>
+            <p>منصتك الموثوقة للحصول على خصومات حصرية من أفضل التجار، مع تحديثات يومية ومقالات تهمك.</p>
+            <div style="display: flex; gap: 15px;">
+                <a href="#deals" class="btn-explore" style="background: var(--orange); padding: 15px 30px;">ابدأ التوفير الآن ←</a>
+            </div>
+        </div>
+    </div>
+
     <section id="deals">
-        <h2>🔥 أحدث العروض</h2>
+        <div class="section-label">عروض حارة</div>
+        <h2 class="section-title">أفضل عروض اليوم</h2>
         <div id="deals-container" class="grid">
             <p>جاري تحميل العروض...</p>
         </div>
     </section>
 
-    <section id="about" class="about-section">
-        <h2>من نحن</h2>
-        <p>شيكس (Shekss) هو منصتك الأولى في مصر للحصول على أفضل الخصومات الحصرية. نحن نربطك بأفضل المحلات التجارية سواء أونلاين أو في منطقتك، لضمان حصولك على أقل الأسعار وتوفير حقيقي في كل عملية شراء.</p>
-    </section>
-
-    <section id="blogs">
-        <h2>📝 مقالات تهمك</h2>
+    <section id="blog" style="background: #fafafa;">
+        <div class="section-label">المدونة</div>
+        <h2 class="section-title">أحدث المقالات</h2>
         <div id="blogs-container" class="grid">
-            <p>جاري تحميل المقالات...</p>
-        </div>
+            </div>
     </section>
 </div>
 
 <footer>
-    &copy; 2026 جميع الحقوق محفوظة لـ شيكس - محمد غريب
+    <p>© 2026 شيكس - جميع الحقوق محفوظة | تطوير محمد غريب</p>
 </footer>
 
 <script>
@@ -85,48 +113,18 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadData() {
-        // تحميل العروض
-        const { data: deals } = await _supabase.from('deals').select('*').order('created_at', { ascending: false });
+        // سحب العروض
+        const { data: deals, error: dError } = await _supabase.from('deals').select('*').order('created_at', { ascending: false });
         const dContainer = document.getElementById('deals-container');
+        
         if (deals && deals.length > 0) {
             dContainer.innerHTML = '';
             deals.forEach(d => {
                 dContainer.innerHTML += `
                     <div class="card">
-                        <img src="${d.image}" class="card-img" alt="${d.name}">
-                        <div class="card-content">
-                            <span class="badge">خصم ${d.discount}%</span>
-                            <h3 style="margin:10px 0">${d.name}</h3>
-                            <p style="color:#64748b; font-size:14px">📍 ${d.governorate} - ${d.city}</p>
-                            <div class="btn-group">
-                                ${d.online_link ? `<a href="${d.online_link}" class="btn btn-main">شراء أونلاين</a>` : ''}
-                                ${d.map_link ? `<a href="${d.map_link}" class="btn btn-alt">الموقع</a>` : ''}
-                            </div>
+                        <div class="card-img-wrap">
+                            <img src="${d.image}" alt="${d.name}">
+                            <span class="discount-badge">${d.discount}%</span>
                         </div>
-                    </div>`;
-            });
-        } else { dContainer.innerHTML = '<p>لا توجد عروض حالياً.</p>'; }
-
-        // تحميل المقالات
-        const { data: blogs } = await _supabase.from('blogs').select('*').order('created_at', { ascending: false });
-        const bContainer = document.getElementById('blogs-container');
-        if (blogs && blogs.length > 0) {
-            bContainer.innerHTML = '';
-            blogs.forEach(b => {
-                bContainer.innerHTML += `
-                    <div class="card">
-                        <img src="${b.image}" class="card-img" alt="${b.title}">
-                        <div class="card-content">
-                            <h3 style="margin-bottom:10px">${b.title}</h3>
-                            <p style="font-size:14px; color:#475569">${b.content.substring(0, 100)}...</p>
-                            <a href="#" style="color:var(--blue); font-weight:700; text-decoration:none; display:block; margin-top:15px">اقرأ المزيد ←</a>
-                        </div>
-                    </div>`;
-            });
-        } else { bContainer.innerHTML = '<p>قريباً سيتم نشر المقالات.</p>'; }
-    }
-
-    window.onload = loadData;
-</script>
-</body>
-</html>
+                        <div class="card-body">
+                            <div
