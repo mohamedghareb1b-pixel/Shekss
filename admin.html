@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shekss Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ستايل الكود القديم هنا... (تم اختصاره للتركيز على الربط) */
+        :root { --blue: #2563eb; --blue-dark: #1d4ed8; --sidebar: #0f172a; --gray-50: #f8fafc; --gray-200: #e2e8f0; --white: #ffffff; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--gray-50); display: flex; min-height: 100vh; margin:0; }
+        .sidebar { width: 240px; background: var(--sidebar); color: white; position: fixed; height: 100vh; padding: 20px; }
+        .main { margin-left: 240px; flex: 1; padding: 32px; }
+        .btn { padding: 10px 20px; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; }
+        .btn-primary { background: var(--blue); color: white; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--gray-200); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--gray-200); }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <h2>Shekss Admin</h2>
+    <p>لوحة التحكم</p>
+</aside>
+
+<main class="main">
+    <h1>إدارة العروض (Deals)</h1>
+    
+    <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #ddd;">
+        <h3>إضافة عرض جديد</h3>
+        <div class="form-group">
+            <label>اسم العرض</label>
+            <input type="text" id="deal-name" placeholder="مثلاً: كارفور مصر">
+        </div>
+        <div class="form-group">
+            <label>القسم</label>
+            <select id="deal-cat">
+                <option value="Food">طعام</option>
+                <option value="Tech">إلكترونيات</option>
+                <option value="Fashion">ملابس</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>نسبة الخصم</label>
+            <input type="number" id="deal-discount" placeholder="30">
+        </div>
+        <div class="form-group">
+            <label>الوصف</label>
+            <textarea id="deal-desc"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveDeal()">حفظ العرض في سوبابيز</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>الاسم</th>
+                <th>القسم</th>
+                <th>الخصم</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody id="deals-table-body">
+            </tbody>
+    </table>
+</main>
+
+<script>
+    // إعدادات الربط الخاصة بك
+    const SUPABASE_URL = 'https://xxsmdktshnysesxawyjq.supabase.co';
+    const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
+    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // وظيفة لجلب البيانات وعرضها في الجدول
+    async function fetchDeals() {
+        const { data: deals, error } = await _supabase
+            .from('deals')
+            .select('*');
+
+        if (error) {
+            console.error('خطأ في جلب البيانات:', error);
+            return;
+        }
+
+        const tableBody = document.getElementById('deals-table-body');
+        tableBody.innerHTML = '';
+
+        deals.forEach(deal => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${deal.name}</td>
+                    <td>${deal.category}</td>
+                    <td>${deal.discount}%</td>
+                    <td>${deal.status || 'نشط'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    // وظيفة حفظ عرض جديد
+    async function saveDeal() {
+        const name = document.getElementById('deal-name').value;
+        const category = document.getElementById('deal-cat').value;
+        const discount = document.getElementById('deal-discount').value;
+        const description = document.getElementById('deal-desc').value;
+
+        if (!name || !discount) {
+            alert('من فضلك املأ البيانات الأساسية');
+            return;
+        }
+
+        const { data, error } = await _supabase
+            .from('deals')
+            .insert([
+                { name, category, discount: parseInt(discount), description, status: 'active' }
+            ]);
+
+        if (error) {
+            alert('حدث خطأ أثناء الحفظ: ' + error.message);
+        } else {
+            alert('تم حفظ العرض بنجاح في سوبابيز!');
+            fetchDeals(); // تحديث الجدول
+        }
+    }
+
+    // تشغيل الجلب عند فتح الصفحة
+    fetchDeals();
+</script>
+
+</body>
+</html>
+
