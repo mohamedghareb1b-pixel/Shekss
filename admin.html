@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shekss Admin Dashboard</title>
+    <title>Shekss Admin - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        /* الستايل الاحترافي بتاعك */
-        :root { --blue: #2563eb; --sidebar: #0f172a; --gray-50: #f8fafc; --white: #fff; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Cairo',sans-serif; background:var(--gray-50); display:flex; min-height:100vh; direction:rtl; }
-        .sidebar { width:220px; background:var(--sidebar); color:white; position:fixed; right:0; height:100vh; padding:20px; }
-        .main { margin-right:220px; flex:1; padding:24px; }
-        .btn { padding:10px 18px; border-radius:8px; font-weight:700; cursor:pointer; border:none; font-family:'Cairo'; }
+        :root { --blue: #2563eb; --sidebar: #0f172a; --gray-50: #f8fafc; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
+        body { background:var(--gray-50); display:flex; min-height:100vh; direction:rtl; }
+        .sidebar { width:240px; background:var(--sidebar); color:white; position:fixed; right:0; height:100vh; padding:20px; }
+        .main { margin-right:240px; flex:1; padding:24px; }
+        .btn { padding:10px 18px; border-radius:8px; font-weight:700; cursor:pointer; border:none; transition: 0.3s; }
         .btn-primary { background:var(--blue); color:white; }
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center; }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1001; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
         .modal-overlay.open { display:flex; }
-        .modal { background:white; padding:25px; border-radius:15px; width:90%; max-width:500px; }
+        .modal { background:white; padding:25px; border-radius:15px; width:95%; max-width:550px; }
         .form-group { margin-bottom:15px; }
         .form-group label { display:block; margin-bottom:5px; font-weight:700; font-size:14px; }
-        .form-group input, .form-group select { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-family:'Cairo'; }
-        table { width:100%; background:white; border-radius:10px; overflow:hidden; border-collapse:collapse; margin-top:20px; }
-        th, td { padding:12px; text-align:right; border-bottom:1px solid #eee; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; outline: none; }
+        table { width:100%; background:white; border-radius:10px; overflow:hidden; border-collapse:collapse; margin-top:20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        th, td { padding:12px; text-align:right; border-bottom:1px solid #eee; font-size: 13px; }
+        th { background: #f1f5f9; color: #475569; }
+        .img-preview { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; display: none; margin-top: 10px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
 <aside class="sidebar">
-    <h2>Shekss Admin</h2>
-    <div style="margin-top:20px">
-        <button class="btn" style="background:none; color:white; width:100%; text-align:right" onclick="location.reload()">📊 لوحة التحكم</button>
-    </div>
+    <h2 style="font-weight: 800; border-bottom: 1px solid #334155; padding-bottom: 10px;">Shekss Admin</h2>
+    <nav style="margin-top:20px">
+        <button class="btn" style="background:none; color:white; width:100%; text-align:right" onclick="location.reload()">📊 إدارة العروض</button>
+    </nav>
 </aside>
 
 <main class="main">
-    <div style="display:flex; justify-content:space-between; align-items:center">
-        <h1>إدارة العروض</h1>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h1>لوحة تحكم العروض</h1>
         <button class="btn btn-primary" onclick="openModal()">+ إضافة عرض جديد</button>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>الاسم</th>
+                <th>الصورة</th>
+                <th>اسم العرض</th>
                 <th>المحافظة</th>
                 <th>المركز</th>
                 <th>الخصم</th>
+                <th>الحالة</th>
             </tr>
         </thead>
         <tbody id="deals-list"></tbody>
@@ -57,52 +60,68 @@
     <div class="modal">
         <h3>إضافة عرض جديد</h3>
         <div class="form-group">
+            <label>صورة العرض</label>
+            <input type="file" accept="image/*" onchange="previewImage(this)">
+            <img id="d-preview" class="img-preview">
+            <input type="hidden" id="d-image-base64">
+        </div>
+        <div class="form-group">
             <label>اسم العرض</label>
             <input type="text" id="d-name" placeholder="مثلاً: كافيه بيناري">
         </div>
-        <div class="form-group">
-            <label>المحافظة</label>
-            <select id="d-gov" onchange="updateCities()">
-                <option value="">اختر المحافظة</option>
-                <option value="الشرقية">الشرقية</option>
-                <option value="الدقهلية">الدقهلية</option>
-                <option value="القاهرة">القاهرة</option>
-            </select>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>المحافظة</label>
+                <select id="d-gov" onchange="updateCities()"><option value="">اختر</option></select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>المركز</label>
+                <select id="d-city"><option value="">اختر المركز</option></select>
+            </div>
         </div>
         <div class="form-group">
-            <label>المركز/المدينة</label>
-            <select id="d-city">
-                <option value="">اختر المركز</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>نسبة الخصم</label>
+            <label>الخصم (%)</label>
             <input type="number" id="d-discount">
         </div>
-        <button class="btn btn-primary" onclick="saveDeal()">حفظ العرض</button>
-        <button class="btn" onclick="closeModal()">إلغاء</button>
+        <button class="btn btn-primary" style="width:100%" onclick="saveDeal()">حفظ العرض</button>
+        <button class="btn" style="width:100%; margin-top:10px" onclick="closeModal()">إلغاء</button>
     </div>
 </div>
 
 <script>
     const SUPABASE_URL = 'https://xxsmdktshnysesxawyjq.supabase.co';
-    const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const citiesData = {
+    const egyptData = {
         "الشرقية": ["فاقوس", "الزقازيق", "أبو حماد", "بلبيس"],
-        "الدقهلية": ["المنصورة", "ميت غمر", "طلخا"],
-        "القاهرة": ["مدينة نصر", "المعادي", "التجمع"]
+        "القاهرة": ["مدينة نصر", "مصر الجديدة", "المعادي"],
+        "الدقهلية": ["المنصورة", "طلخا"]
     };
 
+    const govSelect = document.getElementById('d-gov');
+    Object.keys(egyptData).forEach(gov => {
+        const opt = document.createElement('option'); opt.value = gov; opt.textContent = gov; govSelect.appendChild(opt);
+    });
+
     function updateCities() {
-        const gov = document.getElementById('d-gov').value;
+        const gov = govSelect.value;
         const citySelect = document.getElementById('d-city');
         citySelect.innerHTML = '<option value="">اختر المركز</option>';
-        if (citiesData[gov]) {
-            citiesData[gov].forEach(city => {
-                citySelect.innerHTML += `<option value="${city}">${city}</option>`;
-            });
+        if(egyptData[gov]) egyptData[gov].forEach(c => {
+            const opt = document.createElement('option'); opt.value = c; opt.textContent = c; citySelect.appendChild(opt);
+        });
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('d-preview').src = e.target.result;
+                document.getElementById('d-preview').style.display = 'block';
+                document.getElementById('d-image-base64').value = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
@@ -110,32 +129,30 @@
     function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
     async function saveDeal() {
-        const name = document.getElementById('d-name').value;
-        const gov = document.getElementById('d-gov').value;
-        const city = document.getElementById('d-city').value;
-        const discount = document.getElementById('d-discount').value;
+        const payload = {
+            name: document.getElementById('d-name').value,
+            governorate: document.getElementById('d-gov').value,
+            city: document.getElementById('d-city').value,
+            discount: parseInt(document.getElementById('d-discount').value),
+            image: document.getElementById('d-image-base64').value,
+            status: 'active'
+        };
 
-        const { error } = await _supabase.from('deals').insert([
-            { name: name, governorate: gov, city: city, discount: parseInt(discount) }
-        ]);
-
-        if (error) { alert("خطأ: " + error.message); }
-        else { 
-            alert("تم الحفظ بنجاح!"); 
-            closeModal();
-            loadDeals();
-        }
+        const { error } = await _supabase.from('deals').insert([payload]);
+        if (error) alert("خطأ: " + error.message);
+        else { alert("تم الحفظ!"); closeModal(); location.reload(); }
     }
 
     async function loadDeals() {
-        const { data } = await _supabase.from('deals').select('*');
+        const { data } = await _supabase.from('deals').select('*').order('created_at', { ascending: false });
         const list = document.getElementById('deals-list');
-        list.innerHTML = '';
-        data.forEach(d => {
-            list.innerHTML += `<tr><td>${d.name}</td><td>${d.governorate}</td><td>${d.city}</td><td>${d.discount}%</td></tr>`;
-        });
+        list.innerHTML = data.map(d => `
+            <tr>
+                <td><img src="${d.image || ''}" style="width:40px;height:40px;border-radius:5px;object-fit:cover"></td>
+                <td>${d.name}</td><td>${d.governorate}</td><td>${d.city}</td><td>${d.discount}%</td><td>${d.status}</td>
+            </tr>
+        `).join('');
     }
-
     window.onload = loadDeals;
 </script>
 </body>
