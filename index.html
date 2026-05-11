@@ -1,271 +1,178 @@
 <!DOCTYPE html>
-<!-- تم إضافة نظام التبديل التلقائي للغة -->
-<html lang="en" dir="ltr" id="html-tag">
+<html lang="ar" dir="rtl" id="html-tag">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shekss - Finding the best deals in Egypt</title>
+<title>Shekss - أفضل عروض مصر</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- إضافة خطوط عربية احترافية -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700&family=Sora:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --blue:#2563EB; --blue-dark:#1d4ed8; --orange:#f97316; --orange-dark:#ea6c09;
+  --blue:#2563eb; --blue-dark:#1d4ed8; --orange:#f97316;
   --gray-50:#f8fafc; --gray-100:#f1f5f9; --gray-200:#e2e8f0;
-  --gray-400:#94a3b8; --gray-600:#475569; --gray-800:#1e293b; --white:#fff;
+  --gray-600:#475569; --gray-800:#1e293b; --white:#fff;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-/* تبديل الخط بناءً على اللغة */
-html[lang="ar"] body { font-family: 'Cairo', sans-serif; }
-html[lang="en"] body { font-family: 'Plus Jakarta Sans', sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Cairo', sans-serif; background: var(--gray-50); color: var(--gray-800); transition: all 0.3s; }
 
-body{color:var(--gray-800);background:var(--white); transition: all 0.3s ease;}
+/* Navbar */
+nav { position:sticky; top:0; z-index:100; background:white; border-bottom:1px solid var(--gray-200); padding:0 5%; display:flex; align-items:center; justify-content:space-between; height:70px; }
+.nav-logo { display:flex; align-items:center; gap:10px; cursor:pointer; text-decoration:none; }
+.nav-links { display:flex; gap:15px; }
+.nav-links a { padding:8px 15px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:700; color:var(--gray-600); cursor:pointer; transition: 0.2s; }
+.nav-links a:hover, .nav-links a.active { background: var(--gray-100); color: var(--blue); }
 
-/* زر تبديل اللغة */
-.lang-switch {
-    background: var(--gray-100);
-    border: 1px solid var(--gray-200);
-    padding: 5px 10px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+/* Hero Section */
+.hero { background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: white; padding: 80px 5%; text-align: center; }
+.hero h1 { font-size: 36px; font-weight: 900; margin-bottom: 15px; }
+.hero p { font-size: 18px; opacity: 0.9; margin-bottom: 30px; }
+.btn-primary { background: var(--orange); color: white; padding: 12px 30px; border-radius: 10px; text-decoration: none; font-weight: 800; display: inline-block; transition: 0.3s; border: none; cursor: pointer; }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(249, 115, 22, 0.4); }
 
-/* أيقونة واتساب العائمة */
-.whatsapp-float {
-    position: fixed;
-    bottom: 20px;
-    left: 20px; /* في الإنجليزي يسار، في العربي يمين */
-    background-color: #25d366;
-    color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-    z-index: 1000;
-    text-decoration: none;
-    transition: transform 0.3s;
-}
-html[lang="ar"] .whatsapp-float { left: auto; right: 20px; }
+/* Deals Grid */
+section { padding: 50px 5%; }
+.section-title { font-size: 24px; font-weight: 800; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+.deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+
+/* Deal Card */
+.deal-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid var(--gray-200); }
+.deal-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.deal-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
+.deal-content { padding: 20px; }
+.deal-badge { background: #eff6ff; color: var(--blue); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+.deal-discount { color: var(--orange); font-weight: 900; font-size: 20px; margin: 10px 0; display: block; }
+.deal-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.deal-loc { font-size: 13px; color: var(--gray-600); margin-bottom: 15px; display: flex; align-items: center; gap: 4px; }
+
+/* Utilities */
+.page { display: none; }
+.page.active { display: block; }
+.loading { text-align: center; padding: 50px; color: var(--gray-600); font-weight: 700; }
+
+/* WhatsApp */
+.whatsapp-float { position: fixed; bottom: 25px; left: 25px; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; transition: 0.3s; }
 .whatsapp-float:hover { transform: scale(1.1); }
-
-/* التنسيقات الأساسية من كودك مع تعديلات بسيطة للـ RTL */
-nav{position:sticky;top:0;z-index:100;background:white;border-bottom:1px solid var(--gray-200);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:64px;}
-.nav-links{display:flex;align-items:center;gap:4px;}
-.nav-links a{padding:6px 14px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500;color:var(--gray-600);cursor:pointer;}
-.page{display:none;}
-.page.active{display:block;}
-
-.hero{background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 40%,#7c3aed 100%);min-height:520px;display:flex;align-items:center;position:relative;overflow:hidden;padding:60px 40px;}
-.hero-content{position:relative;z-index:2;max-width:650px; text-align: left;}
-html[lang="ar"] .hero-content { text-align: right; }
-.btn-primary{background:var(--orange);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;}
-
-/* دعم الـ RTL لشبكة العروض */
-html[lang="ar"] .deals-grid, html[lang="ar"] .footer-grid { direction: rtl; }
-
-/* بقية الاستايلات الخاصة بك وضعت هنا للاختصار */
-.deals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
-.deal-card{border:1px solid var(--gray-200);border-radius:14px;overflow:hidden;background:white;}
-.deal-body{padding:16px; text-align: inherit;}
 </style>
 </head>
 <body>
 
-<!-- زر الواتساب -->
-<a href="https://wa.me/201125472360" class="whatsapp-float" target="_blank">
-    <svg width="35" height="35" fill="white" viewBox="0 0 24 24"><path d="M12.031 6.172c-2.277 0-4.132 1.855-4.132 4.132 0 .685.172 1.353.498 1.95l-.532 1.943 1.991-.522c.571.31 1.214.474 1.868.474 2.276 0 4.13-1.855 4.13-4.132 0-2.277-1.854-4.132-4.131-4.132zm3.11 5.437c-.043.197-.249.345-.453.385-.205.04-.413.064-.613.04-.33-.038-.646-.142-.937-.308-.432-.246-.788-.609-1.045-1.033-.11-.182-.19-.38-.239-.586-.048-.205-.045-.418.01-.617.054-.199.176-.375.341-.5.11-.083.24-.132.375-.14h.111c.068 0 .132.023.18.067.047.043.078.102.088.166l.135.534c.02.083.01.171-.027.247-.037.076-.098.136-.174.17l-.146.065c-.05.023-.083.07-.087.124-.004.054.022.106.066.139.2.149.424.269.664.358.21.077.433.125.66.143.054.004.108-.014.148-.051.04-.037.065-.088.069-.142l.024-.265c.005-.06.03-.116.072-.158.041-.041.097-.066.157-.069l.551-.024c.067-.003.133.021.182.067.049.046.079.11.083.177l.02.508zM12 2C6.477 2 2 6.477 2 12c0 1.891.528 3.655 1.442 5.16L2 22l4.988-1.313C8.423 21.543 10.15 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.634 0-3.139-.469-4.415-1.273l-.317-.2-.234.062-2.115.557.568-2.074-.216-.345C4.488 15.352 4 13.734 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
-</a>
-
-<!-- NAV -->
-<nav id="navbar">
-  <a class="nav-logo" onclick="showPage('home')">
-    <img src="logo.png" alt="Shekss" id="logo-img">
-    <span id="site-name" style="font-family:'Sora',sans-serif;font-weight:700;font-size:24px;color:var(--blue);">Shekss</span>
-  </a>
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">
+    <span style="font-size:26px;">🛍️</span>
+    <span style="font-weight:900; font-size:22px; color:var(--blue);">Shekss</span>
+  </div>
   
   <div class="nav-links">
-    <a class="active" onclick="showPage('home')" id="txt-nav-home">Home</a>
-    <a onclick="showPage('deals')" id="txt-nav-deals">Deals</a>
-    <a onclick="showPage('blog')" id="txt-nav-blog">Blog</a>
-    <a onclick="showPage('partners')" id="txt-nav-partners">Partners</a>
+    <a id="nav-home" class="active" onclick="showPage('home')">الرئيسية</a>
+    <a id="nav-deals" onclick="showPage('deals')">العروض</a>
+    <a id="nav-blog" onclick="showPage('blog')">المدونة</a>
   </div>
 
-  <div style="display:flex; align-items:center; gap:15px;">
-    <!-- زر تبديل اللغة -->
-    <div class="lang-switch" onclick="toggleLanguage()">
-        <span id="lang-text">العربية</span>
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9-9c1.657 0 3 4.03 3 9s-1.343 9-3 9m0-18c-1.657 0-3 4.03-3 9s1.343 9 3 9m-9-9a9 9 0 019-9"></path></svg>
-    </div>
-    <a class="btn-explore" onclick="showPage('deals')" id="txt-btn-explore">Explore Deals</a>
-  </div>
+  <button class="btn-primary" style="padding: 8px 20px; font-size: 14px;" onclick="showPage('deals')">كل العروض</button>
 </nav>
 
-<!-- HOME PAGE -->
+<!-- Home Page -->
 <div id="page-home" class="page active">
   <div class="hero">
-    <div class="hero-content">
-      <div class="hero-badge" id="txt-hero-badge">✦ Your trusted deals platform</div>
-      <h1 id="txt-hero-title">Finding the best deals in Egypt with Shekss</h1>
-      <p id="txt-hero-desc">Discover exclusive discounts from top Egyptian merchants and stay updated with the latest lifestyle content</p>
-      <div class="hero-btns">
-        <a class="btn-primary" onclick="showPage('deals')" id="txt-btn-hero-primary">Explore Deals Now →</a>
-      </div>
-    </div>
+    <h1>أقوى العروض والخصومات في مصر 🇪🇬</h1>
+    <p>وفر فلوسك مع Shekss، بنجمعلك الخصومات الحصرية من المحلات والبراندات في مكان واحد.</p>
+    <button class="btn-primary" onclick="showPage('deals')">استكشف العروض الآن</button>
   </div>
 
   <section>
-    <h2 class="section-title" id="txt-deals-title">Today's best offers</h2>
+    <div class="section-title">🔥 عروض مختارة</div>
     <div id="home-deals-grid" class="deals-grid">
-        <!-- العروض ستظهر هنا -->
-        <p style="text-align:center; grid-column: 1/-1; color: var(--gray-400);">Loading deals...</p>
+      <div class="loading">جاري تحميل العروض...</div>
     </div>
   </section>
 </div>
 
-<!-- صفحة الـ DEALS -->
+<!-- All Deals Page -->
 <div id="page-deals" class="page">
-    <section>
-        <h1 id="txt-all-deals-title" style="text-align:center; margin-bottom:30px;">All Exclusive Deals</h1>
-        <div id="all-deals-grid" class="deals-grid"></div>
-    </section>
+  <section>
+    <div class="section-title">📋 كل العروض الحصرية</div>
+    <div id="all-deals-grid" class="deals-grid"></div>
+  </section>
 </div>
 
+<!-- Blog Page -->
+<div id="page-blog" class="page">
+  <section>
+    <div class="section-title">📝 مقالات ونصائح التسوق</div>
+    <div id="blog-grid" class="deals-grid">
+      <div class="loading">قريباً...</div>
+    </div>
+  </section>
+</div>
+
+<a href="https://wa.me/201125472360" class="whatsapp-float" target="_blank">
+  <svg width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M12.031 6.172c-2.277 0-4.132 1.855-4.132 4.132 0 .685.172 1.353.498 1.95l-.532 1.943 1.991-.522c.571.31 1.214.474 1.868.474 2.276 0 4.13-1.855 4.13-4.132 0-2.277-1.854-4.132-4.131-4.132zm3.11 5.437c-.043.197-.249.345-.453.385-.205.04-.413.064-.613.04-.33-.038-.646-.142-.937-.308-.432-.246-.788-.609-1.045-1.033-.11-.182-.19-.38-.239-.586-.048-.205-.045-.418.01-.617.054-.199.176-.375.341-.5.11-.083.24-.132.375-.14h.111c.068 0 .132.023.18.067.047.043.078.102.088.166l.135.534c.02.083.01.171-.027.247-.037.076-.098.136-.174.17l-.146.065c-.05.023-.083.07-.087.124-.004.054.022.106.066.139.2.149.424.269.664.358.21.077.433.125.66.143.054.004.108-.014.148-.051.04-.037.065-.088.069-.142l.024-.265c.005-.06.03-.116.072-.158.041-.041.097-.066.157-.069l.551-.024c.067-.003.133.021.182.067.049.046.079.11.083.177l.02.508zM12 2C6.477 2 2 6.477 2 12c0 1.891.528 3.655 1.442 5.16L2 22l4.988-1.313C8.423 21.543 10.15 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.634 0-3.139-.469-4.415-1.273l-.317-.2-.234.062-2.115.557.568-2.074-.216-.345C4.488 15.352 4 13.734 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+</a>
+
 <script>
-// --- إعدادات Supabase ---
-const _supabase = supabase.createClient('رابط_مشروعك', 'مفتاح_API');
+// --- التكوين (Supabase Config) ---
+const SUPA_URL = 'https://xxsmdktshnysesxawyjq.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
+const _supabase = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// --- نظام الترجمة ---
-const translations = {
-    en: {
-        navHome: "Home",
-        navDeals: "Deals",
-        navBlog: "Blog",
-        navPartners: "Partners",
-        btnExplore: "Explore Deals",
-        heroBadge: "✦ Your trusted deals platform",
-        heroTitle: "Finding the best deals in Egypt with Shekss",
-        heroDesc: "Discover exclusive discounts from top Egyptian merchants.",
-        btnHeroPrimary: "Explore Deals Now →",
-        dealsTitle: "Today's best offers",
-        allDealsTitle: "All Exclusive Deals",
-        langBtn: "العربية"
-    },
-    ar: {
-        navHome: "الرئيسية",
-        navDeals: "العروض",
-        navBlog: "المدونة",
-        navPartners: "شركاؤنا",
-        btnExplore: "استكشف العروض",
-        heroBadge: "✦ منصتك الموثوقة للعروض",
-        heroTitle: "اكتشف أفضل العروض في مصر مع شكس",
-        heroDesc: "خصومات حصريّة من أفضل التجار المصريين ومحتوى ترفيهي يومي.",
-        btnHeroPrimary: "استكشف العروض الآن ←",
-        dealsTitle: "أفضل عروض اليوم",
-        allDealsTitle: "جميع العروض الحصرية",
-        langBtn: "English"
-    }
-};
-
-let currentLang = 'en';
-
-function toggleLanguage() {
-    currentLang = currentLang === 'en' ? 'ar' : 'en';
-    updateLanguage();
-}
-
-function updateLanguage() {
-    const t = translations[currentLang];
-    const html = document.getElementById('html-tag');
-    
-    // تغيير نصوص القائمة
-    document.getElementById('txt-nav-home').innerText = t.navHome;
-    document.getElementById('txt-nav-deals').innerText = t.navDeals;
-    document.getElementById('txt-nav-blog').innerText = t.navBlog;
-    document.getElementById('txt-nav-partners').innerText = t.navPartners;
-    document.getElementById('txt-btn-explore').innerText = t.btnExplore;
-    
-    // تغيير نصوص الهيرو
-    document.getElementById('txt-hero-badge').innerText = t.heroBadge;
-    document.getElementById('txt-hero-title').innerText = t.heroTitle;
-    document.getElementById('txt-hero-desc').innerText = t.heroDesc;
-    document.getElementById('txt-btn-hero-primary').innerText = t.btnHeroPrimary;
-    document.getElementById('txt-deals-title').innerText = t.dealsTitle;
-    document.getElementById('txt-all-deals-title').innerText = t.allDealsTitle;
-    document.getElementById('lang-text').innerText = t.langBtn;
-
-    // تغيير الاتجاه واللغة
-    html.lang = currentLang;
-    html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-    
-    // إعادة تحميل العروض باللغة الصحيحة إذا لزم الأمر
-    loadDeals();
-}
-
-// --- نظام التنقل بين الصفحات ---
+// --- تبديل الصفحات ---
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    
     document.getElementById('page-' + pageId).classList.add('active');
+    document.getElementById('nav-' + pageId).classList.add('active');
     window.scrollTo(0,0);
+
+    if(pageId === 'deals' || pageId === 'home') fetchDeals();
 }
 
 // --- جلب العروض من Supabase ---
-async function loadDeals() {
+async function fetchDeals() {
     const { data, error } = await _supabase
-        .from('deals') // تأكد أن اسم الجدول في Supabase هو deals
+        .from('deals')
         .select('*')
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Error loading deals:", error);
+        console.error('Error:', error);
         return;
     }
 
-    displayDeals(data);
+    renderDeals(data);
 }
 
-function displayDeals(deals) {
-    const grid = document.getElementById('home-deals-grid');
+function renderDeals(deals) {
+    const homeGrid = document.getElementById('home-deals-grid');
     const allGrid = document.getElementById('all-deals-grid');
-    
+
     if (!deals || deals.length === 0) {
-        grid.innerHTML = "<p>لا توجد عروض حالياً.</p>";
+        const noData = '<div class="loading">لا توجد عروض حالياً.</div>';
+        homeGrid.innerHTML = noData;
+        allGrid.innerHTML = noData;
         return;
     }
 
-    const html = deals.map(deal => `
+    const cardsHtml = deals.map(deal => `
         <div class="deal-card">
-            <div class="deal-img">
-                <img src="${deal.image_url || 'placeholder.jpg'}" alt="${deal.title}">
-                ${deal.discount ? `<div class="discount-badge">${deal.discount}%</div>` : ''}
-            </div>
-            <div class="deal-body">
-                <div class="deal-cat">${deal.category || 'General'}</div>
-                <div class="deal-name">${currentLang === 'ar' ? (deal.title_ar || deal.title) : deal.title}</div>
-                <div class="deal-desc">${currentLang === 'ar' ? (deal.desc_ar || deal.description) : deal.description}</div>
-                <button class="btn-claim">${currentLang === 'ar' ? 'احصل على العرض' : 'Claim Deal'}</button>
+            <img src="${deal.image || 'https://via.placeholder.com/300x180?text=No+Image'}" class="deal-img" alt="${deal.name}">
+            <div class="deal-content">
+                <span class="deal-badge">${deal.category || 'عام'}</span>
+                <span class="deal-discount">${deal.discount}% خصم</span>
+                <h3 class="deal-title">${deal.name}</h3>
+                <div class="deal-loc">📍 ${deal.governorate} - ${deal.city}</div>
+                <a href="${deal.link || '#'}" target="_blank" class="btn-primary" style="width:100%; text-align:center;">تفاصيل العرض</a>
             </div>
         </div>
     `).join('');
 
-    grid.innerHTML = html;
-    if(allGrid) allGrid.innerHTML = html;
+    if(homeGrid) homeGrid.innerHTML = cardsHtml;
+    if(allGrid) allGrid.innerHTML = cardsHtml;
 }
 
-// تشغيل عند التحميل
-window.onload = () => {
-    loadDeals();
-};
-
+// التشغيل عند التحميل
+window.onload = fetchDeals;
 </script>
 </body>
 </html>
