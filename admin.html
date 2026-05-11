@@ -3,440 +3,477 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shekss Admin - لوحة التحكم</title>
+<title>شيكس - أفضل العروض في مصر</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-:root { --blue:#2563eb; --dark:#0f172a; --bg:#f1f5f9; --green:#10b981; --red:#ef4444; --orange:#f97316; }
-* { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
-body { background:var(--bg); display:flex; min-height:100vh; direction:rtl; }
-
-.sidebar { width:240px; background:var(--dark); color:white; position:fixed; right:0; height:100vh; padding:20px; display:flex; flex-direction:column; z-index:100; }
-.logo { font-weight:900; font-size:20px; margin-bottom:30px; text-align:center; color:#38bdf8; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); }
-.nav-btn { width:100%; padding:13px 16px; background:none; border:none; color:#94a3b8; text-align:right; cursor:pointer; border-radius:10px; margin-bottom:6px; font-weight:700; font-size:14px; font-family:'Cairo',sans-serif; transition:all 0.2s; display:flex; align-items:center; gap:8px; }
-.nav-btn:hover { background:rgba(255,255,255,0.08); color:white; }
-.nav-btn.active { background:var(--blue); color:white; }
-
-.main { margin-right:240px; flex:1; padding:28px; }
-.tab { display:none; }
-.tab.active { display:block; }
-
-.page-title { font-size:22px; font-weight:900; margin-bottom:24px; color:#1e293b; }
-
-.card { background:white; padding:24px; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:24px; }
-.card-title { font-size:16px; font-weight:800; margin-bottom:20px; color:#1e293b; padding-bottom:12px; border-bottom:1px solid #f1f5f9; }
-
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.form-group { margin-bottom:16px; }
-.form-group.full { grid-column:1/-1; }
-label { display:block; margin-bottom:6px; font-weight:700; font-size:13px; color:#475569; }
-input[type=text], input[type=number], input[type=email], select, textarea {
-  width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:9px;
-  font-family:'Cairo',sans-serif; font-size:14px; outline:none; transition:border 0.2s; background:#fafafa;
+:root {
+  --blue: #2563EB;
+  --blue-dark: #1d4ed8;
+  --blue-light: #eff6ff;
+  --orange: #f97316;
+  --orange-dark: #ea6c09;
+  --orange-light: #fff7ed;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-800: #1e293b;
+  --white: #ffffff;
+  --radius: 16px;
 }
-input:focus, select:focus, textarea:focus { border-color:var(--blue); background:white; box-shadow:0 0 0 3px rgba(37,99,235,0.08); }
-textarea { height:110px; resize:vertical; }
 
-.img-upload { border:2px dashed #e2e8f0; border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s; background:#fafafa; position:relative; }
-.img-upload:hover { border-color:var(--blue); background:#eff6ff; }
-.img-upload input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-.img-upload .icon { font-size:28px; margin-bottom:6px; }
-.img-upload p { font-size:13px; color:#94a3b8; }
-.img-preview { width:100%; max-height:150px; object-fit:contain; border-radius:8px; margin-top:10px; display:none; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-.btn-save { padding:13px 24px; border:none; border-radius:10px; cursor:pointer; font-weight:800; font-size:15px; font-family:'Cairo',sans-serif; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
-.btn-blue { background:var(--blue); color:white; width:100%; justify-content:center; }
-.btn-blue:hover { background:#1d4ed8; transform:translateY(-1px); }
-.btn-green { background:var(--green); color:white; width:100%; justify-content:center; }
-.btn-green:hover { background:#059669; }
-.btn-red { background:#fef2f2; color:var(--red); padding:7px 14px; font-size:12px; }
-.btn-red:hover { background:var(--red); color:white; }
-.btn-edit { background:#eff6ff; color:var(--blue); padding:7px 14px; font-size:12px; }
-.btn-edit:hover { background:var(--blue); color:white; }
+body {
+  font-family: 'Cairo', sans-serif;
+  color: var(--gray-800);
+  background: var(--white);
+  direction: rtl;
+}
 
-table { width:100%; border-collapse:collapse; }
-th { padding:12px 16px; text-align:right; font-size:12px; font-weight:800; color:#64748b; background:#f8fafc; border-bottom:2px solid #e2e8f0; }
-td { padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; vertical-align:middle; }
-tr:hover td { background:#fafafa; }
-.deal-img-cell { width:50px; height:50px; border-radius:8px; object-fit:cover; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:20px; }
-.deal-img-cell img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
-.badge { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
-.badge-green { background:#ecfdf5; color:var(--green); }
-.badge-red { background:#fef2f2; color:var(--red); }
-.badge-blue { background:#eff6ff; color:var(--blue); }
+/* ===== NAV ===== */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 68px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; cursor: pointer;
+}
+.nav-logo img { height: 38px; width: auto; }
+.nav-logo-text {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 800; font-size: 22px; color: var(--blue);
+}
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+  padding: 7px 16px; border-radius: 8px;
+  text-decoration: none; font-size: 14px; font-weight: 600;
+  color: var(--gray-600); transition: all 0.2s; cursor: pointer;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--blue); background: var(--blue-light);
+}
+.btn-nav-cta {
+  background: var(--orange); color: white;
+  border: none; padding: 10px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  transition: all 0.2s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-nav-cta:hover { background: var(--orange-dark); transform: translateY(-1px); }
+.hamburger { display: none; background: none; border: none; font-size: 24px; cursor: pointer; }
 
-.toast { position:fixed; bottom:24px; left:24px; z-index:999; padding:14px 20px; border-radius:12px; font-size:14px; font-weight:700; color:white; display:none; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; }
-.toast.show { display:flex; }
-.toast.success { background:#10b981; }
-.toast.error { background:#ef4444; }
-@keyframes slideUp { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+/* ===== PAGES ===== */
+.page { display: none; }
+.page.active { display: block; }
 
-.loading { text-align:center; padding:40px; color:#94a3b8; font-size:14px; }
-.empty { text-align:center; padding:50px; color:#94a3b8; }
-.empty .icon { font-size:40px; margin-bottom:10px; }
+/* ===== HERO ===== */
+.hero {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #7c3aed 100%);
+  min-height: 560px;
+  display: flex; align-items: center;
+  position: relative; overflow: hidden;
+  padding: 60px 32px;
+}
+.hero-shapes {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.hero-shape {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.hero-shape-1 { width: 500px; height: 500px; top: -100px; left: -150px; }
+.hero-shape-2 { width: 300px; height: 300px; bottom: -80px; right: 10%; }
+.hero-shape-3 { width: 150px; height: 150px; top: 40%; left: 30%; }
+.hero-content {
+  position: relative; z-index: 2;
+  max-width: 600px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.15); color: white;
+  padding: 7px 16px; border-radius: 30px; font-size: 13px; font-weight: 600;
+  margin-bottom: 24px; backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.hero-badge::before { content: '✦'; color: var(--orange); }
+.hero h1 {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 54px; font-weight: 800; color: white; line-height: 1.2;
+  margin-bottom: 20px;
+}
+.hero h1 span { color: var(--orange); }
+.hero p {
+  font-size: 17px; color: rgba(255,255,255,0.85); line-height: 1.8;
+  margin-bottom: 36px; max-width: 480px;
+}
+.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn-hero-primary {
+  background: var(--orange); color: white;
+  border: none; padding: 14px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba(249,115,22,0.4);
+}
+.btn-hero-primary:hover { background: var(--orange-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(249,115,22,0.5); }
+.btn-hero-secondary {
+  background: rgba(255,255,255,0.15); color: white;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  padding: 14px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
+  text-decoration: none; backdrop-filter: blur(8px);
+  transition: all 0.25s;
+}
+.btn-hero-secondary:hover { background: rgba(255,255,255,0.25); }
+.hero-stats {
+  display: flex; gap: 36px; margin-top: 48px;
+}
+.hero-stat { color: rgba(255,255,255,0.9); }
+.hero-stat-val { font-family: 'Tajawal', sans-serif; font-size: 28px; font-weight: 800; color: white; display: block; }
+.hero-stat-lbl { font-size: 13px; color: rgba(255,255,255,0.65); }
 
-.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
-.stat { background:white; padding:20px; border-radius:12px; border-right:4px solid var(--blue); }
-.stat.green { border-color:var(--green); }
-.stat.orange { border-color:var(--orange); }
-.stat-val { font-size:28px; font-weight:900; color:#1e293b; }
-.stat-lbl { font-size:13px; color:#94a3b8; margin-top:4px; }
+/* ===== SECTIONS ===== */
+.section-wrap { padding: 64px 32px; max-width: 1240px; margin: 0 auto; }
+.section-header { margin-bottom: 40px; }
+.section-tag {
+  display: inline-block; font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--orange); background: var(--orange-light);
+  padding: 5px 14px; border-radius: 30px; margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 36px; font-weight: 800; color: var(--gray-800); margin-bottom: 8px;
+}
+.section-sub { font-size: 15px; color: var(--gray-600); }
+.section-header-row {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+}
 
-@media(max-width:700px){
-  .sidebar{width:100%;height:auto;position:relative;}
-  .main{margin-right:0;}
-  .form-grid{grid-template-columns:1fr;}
-  .stats{grid-template-columns:1fr 1fr;}
+/* ===== FILTERS ===== */
+.filters {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;
+}
+.filter-pill {
+  padding: 8px 20px; border-radius: 30px;
+  border: 1.5px solid var(--gray-200); font-size: 13px; font-weight: 600;
+  cursor: pointer; background: white; color: var(--gray-600);
+  font-family: 'Cairo', sans-serif; transition: all 0.2s;
+}
+.filter-pill.active, .filter-pill:hover {
+  background: var(--blue); color: white; border-color: var(--blue);
+}
+
+/* ===== DEALS GRID ===== */
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 22px;
+}
+.deal-card {
+  border: 1px solid var(--gray-200); border-radius: var(--radius);
+  overflow: hidden; background: white; transition: all 0.3s;
+  position: relative;
+}
+.deal-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(37,99,235,0.12);
+  border-color: transparent;
+}
+.deal-img {
+  height: 170px; background: var(--gray-100);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; font-size: 48px;
+}
+.deal-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.deal-card:hover .deal-img img { transform: scale(1.05); }
+.badge-hot {
+  position: absolute; top: 12px; right: 12px;
+  background: #ef4444; color: white; font-size: 11px; font-weight: 800;
+  padding: 4px 10px; border-radius: 6px;
+  font-family: 'Cairo', sans-serif;
+}
+.badge-discount {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--blue); color: white; font-size: 16px; font-weight: 800;
+  padding: 5px 12px; border-radius: 8px;
+  font-family: 'Tajawal', sans-serif;
+}
+.deal-body { padding: 18px; }
+.deal-cat {
+  font-size: 11px; font-weight: 700; color: var(--orange);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+.deal-name { font-weight: 800; font-size: 16px; margin-bottom: 8px; line-height: 1.3; }
+.deal-desc { font-size: 13px; color: var(--gray-600); margin-bottom: 10px; line-height: 1.5; }
+.deal-location {
+  font-size: 12px; color: var(--gray-400); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 4px;
+}
+.deal-price {
+  font-size: 13px; font-weight: 700; color: var(--orange);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 4px;
+}
+.btn-claim {
+  width: 100%; background: var(--blue); color: white;
+  border: none; padding: 11px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Cairo', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s;
+}
+.btn-claim:hover { background: var(--blue-dark); }
+
+/* ===== BLOG GRID ===== */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+.blog-card {
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--gray-200); background: white; transition: all 0.3s;
+}
+.blog-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.09); }
+.blog-img {
+  height: 200px; background: var(--gray-100);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; font-size: 56px;
+}
+.blog-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.blog-card:hover .blog-img img { transform: scale(1.04); }
+.blog-label {
+  position: absolute; bottom: 12px; right: 12px;
+  background: rgba(0,0,0,0.65); color: white;
+  font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+.blog-body { padding: 20px; }
+.blog-body h3 { font-size: 16px; font-weight: 800; margin-bottom: 10px; line-height: 1.5; }
+.blog-body p { font-size: 13px; color: var(--gray-600); line-height: 1.7; margin-bottom: 16px; }
+.read-more {
+  color: var(--blue); font-size: 13px; font-weight: 700;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  transition: gap 0.2s;
+}
+.read-more:hover { gap: 10px; }
+
+/* ===== CTA BANNER ===== */
+.cta-banner {
+  background: linear-gradient(135deg, var(--blue) 0%, #7c3aed 100%);
+  border-radius: 24px; padding: 64px 48px;
+  text-align: center; margin: 0 32px 64px; color: white;
+  position: relative; overflow: hidden;
+}
+.cta-banner::before {
+  content: ''; position: absolute;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  top: -150px; left: -100px;
+}
+.cta-banner h2 {
+  font-family: 'Tajawal', sans-serif; font-size: 38px; font-weight: 800;
+  margin-bottom: 14px; position: relative;
+}
+.cta-banner p { font-size: 17px; opacity: 0.85; margin-bottom: 32px; position: relative; }
+.btn-cta-white {
+  background: white; color: var(--blue);
+  border: none; padding: 14px 32px; border-radius: 12px;
+  font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Cairo', sans-serif;
+  text-decoration: none; display: inline-block; transition: all 0.2s; position: relative;
+}
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+/* ===== PARTNERS PAGE ===== */
+.partners-hero {
+  background: linear-gradient(135deg, var(--blue) 0%, #7c3aed 100%);
+  padding: 80px 32px; text-align: center; color: white; position: relative; overflow: hidden;
+}
+.partners-hero h1 { font-family: 'Tajawal', sans-serif; font-size: 48px; font-weight: 800; margin-bottom: 16px; }
+.partners-hero p { font-size: 18px; opacity: 0.85; }
+.features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.feature-card {
+  background: white; border: 1px solid var(--gray-200); border-radius: var(--radius);
+  padding: 28px; display: flex; gap: 18px; align-items: flex-start;
+  transition: all 0.2s;
+}
+.feature-card:hover { box-shadow: 0 8px 24px rgba(37,99,235,0.1); border-color: var(--blue-light); }
+.feature-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--blue-light); display: flex; align-items: center;
+  justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.feature-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+.feature-card p { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+/* ===== FORM ===== */
+.form-wrap { max-width: 680px; margin: 0 auto; padding: 64px 32px; }
+.form-wrap h2 { font-family: 'Tajawal', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 8px; text-align: center; }
+.form-wrap .sub { text-align: center; color: var(--gray-600); margin-bottom: 36px; font-size: 15px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.fg.full { grid-column: 1/-1; }
+.fg label { font-size: 13px; font-weight: 700; color: var(--gray-800); }
+.fg input, .fg select, .fg textarea {
+  border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 11px 14px;
+  font-size: 14px; font-family: 'Cairo', sans-serif; outline: none;
+  transition: border 0.2s; background: var(--gray-50);
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus {
+  border-color: var(--blue); background: white;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.fg textarea { min-height: 130px; resize: vertical; }
+.btn-submit {
+  width: 100%; background: var(--blue); color: white;
+  border: none; padding: 14px; border-radius: 12px;
+  font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px;
+  font-family: 'Cairo', sans-serif; transition: background 0.2s;
+}
+.btn-submit:hover { background: var(--blue-dark); }
+
+/* ===== CONTACT PAGE ===== */
+.contact-hero {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 40%, #1d4ed8 100%);
+  padding: 72px 32px; text-align: center; color: white;
+}
+.contact-hero h1 { font-family: 'Tajawal', sans-serif; font-size: 44px; font-weight: 800; margin-bottom: 14px; }
+.contact-hero p { font-size: 17px; opacity: 0.85; }
+.contact-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  max-width: 860px; margin: -32px auto 0; padding: 0 32px;
+}
+.contact-card {
+  background: white; border-radius: 14px; padding: 28px 20px;
+  text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+}
+.contact-card-icon { font-size: 30px; margin-bottom: 10px; }
+.contact-card-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); margin-bottom: 6px; }
+.contact-card-val { font-size: 14px; font-weight: 800; color: var(--gray-800); }
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; max-width: 960px; margin: 64px auto; padding: 0 32px; }
+.contact-info h3 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+.contact-info p { font-size: 14px; color: var(--gray-600); line-height: 1.8; margin-bottom: 24px; }
+.social-row { display: flex; gap: 10px; }
+.social-btn {
+  width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid var(--gray-200);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; color: var(--gray-600);
+}
+.social-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.hours-box { background: var(--gray-50); border-radius: 12px; padding: 18px; margin-top: 24px; border: 1px solid var(--gray-200); }
+.hours-box h4 { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+.hours-box p { font-size: 13px; color: var(--gray-600); line-height: 1.8; }
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--gray-800); color: white;
+  padding: 56px 32px 24px;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; max-width: 1240px; margin: 0 auto 48px; }
+.footer-logo img { height: 36px; width: auto; margin-bottom: 14px; }
+.footer-brand p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.8; }
+.footer-col h4 { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 13px; color: rgba(255,255,255,0.65); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; cursor: pointer; }
+.footer-col a:hover { color: white; }
+.footer-col p { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 8px; }
+.footer-bottom {
+  max-width: 1240px; margin: 0 auto; padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-bottom p { font-size: 12px; color: rgba(255,255,255,0.3); }
+.footer-bottom-links { display: flex; gap: 20px; }
+.footer-bottom-links a { font-size: 12px; color: rgba(255,255,255,0.3); text-decoration: none; cursor: pointer; }
+.footer-bottom-links a:hover { color: white; }
+
+/* ===== SKELETON ===== */
+.skeleton { background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%); background-size: 200% 100%; border-radius: var(--radius); animation: shimmer 1.5s infinite; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk-deal { height: 300px; }
+.sk-blog { height: 360px; }
+
+/* ===== EMPTY ===== */
+.empty-state { text-align: center; padding: 64px 20px; color: var(--gray-400); grid-column: 1/-1; }
+.empty-state .icon { font-size: 52px; margin-bottom: 14px; }
+.empty-state p { font-size: 15px; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 24px; left: 24px; z-index: 999;
+  background: var(--gray-800); color: white; padding: 14px 22px; border-radius: 12px;
+  font-size: 14px; font-weight: 600; display: none; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2); font-family: 'Cairo', sans-serif;
+}
+.toast.show { display: flex; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== VIEWALL BTN ===== */
+.btn-viewall {
+  border: 1.5px solid var(--blue); color: var(--blue); background: white;
+  padding: 11px 26px; border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Cairo', sans-serif; transition: all 0.2s;
+}
+.btn-viewall:hover { background: var(--blue); color: white; }
+.center-wrap { text-align: center; margin-top: 44px; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+  .hero { padding: 48px 16px; }
+  .hero h1 { font-size: 34px; }
+  .hero-stats { gap: 24px; }
+  .section-wrap { padding: 48px 16px; }
+  .deals-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .cta-banner { margin: 0 16px 48px; padding: 40px 24px; }
+  .cta-banner h2 { font-size: 26px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .contact-cards { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .partners-hero h1 { font-size: 30px; }
+}
+@media(max-width:480px){
+  .deals-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 28px; }
+  .hero-stats { flex-wrap: wrap; gap: 16px; }
 }
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="logo">🛍️ Shekss Admin</div>
-  <button class="nav-btn active" onclick="showTab('deals',this)">🏷️ إدارة العروض</button>
-  <button class="nav-btn" onclick="showTab('blog',this)">📝 إدارة المدونة</button>
-  <button class="nav-btn" onclick="showTab('view-deals',this)">📋 عرض العروض</button>
-  <button class="nav-btn" onclick="showTab('view-blog',this)">📰 عرض المقالات</button>
-</aside>
-
-<main class="main">
-
-  <!-- ===== إضافة عرض ===== -->
-  <div id="tab-deals" class="tab active">
-    <div class="page-title">➕ إضافة عرض جديد</div>
-    <div class="card">
-      <div class="card-title">تفاصيل العرض</div>
-
-      <!-- صورة -->
-      <div class="form-group">
-        <label>📷 صورة العرض أو اللوجو</label>
-        <div class="img-upload" id="deal-upload-area">
-          <input type="file" accept="image/*" onchange="handleImg(this,'deal-preview','deal-img-data')">
-          <div id="deal-upload-placeholder">
-            <div class="icon">🖼️</div>
-            <p>اضغط لاختيار صورة من جهازك</p>
-            <p style="font-size:11px;margin-top:4px">PNG, JPG - حجم أقصى 2MB</p>
-          </div>
-          <img id="deal-preview" class="img-preview" alt="">
-        </div>
-        <input type="hidden" id="deal-img-data">
-      </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>اسم المحل / العلامة التجارية *</label>
-          <input type="text" id="d-name" placeholder="مثلاً: كارفور الشرقية">
-        </div>
-        <div class="form-group">
-          <label>نسبة الخصم (%) *</label>
-          <input type="number" id="d-discount" placeholder="مثلاً: 30" min="1" max="99">
-        </div>
-        <div class="form-group">
-          <label>القسم</label>
-          <select id="d-cat">
-            <option value="">اختر القسم</option>
-            <option>طعام</option>
-            <option>تكنولوجيا</option>
-            <option>أزياء</option>
-            <option>جمال</option>
-            <option>منزل</option>
-            <option>كافيهات</option>
-            <option>أحذية</option>
-            <option>مواقع</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>الحالة</label>
-          <select id="d-status">
-            <option value="active">نشط ✅</option>
-            <option value="hot">عرض ساخن 🔥</option>
-            <option value="expired">منتهي</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>المحافظة</label>
-          <select id="d-gov" onchange="fillCities()">
-            <option value="">اختر المحافظة</option>
-            <option>القاهرة</option>
-            <option>الجيزة</option>
-            <option>الشرقية</option>
-            <option>الدقهلية</option>
-            <option>الإسكندرية</option>
-            <option>الغربية</option>
-            <option>المنوفية</option>
-            <option>البحيرة</option>
-            <option>كفر الشيخ</option>
-            <option>دمياط</option>
-            <option>بورسعيد</option>
-            <option>الإسماعيلية</option>
-            <option>السويس</option>
-            <option>الفيوم</option>
-            <option>بني سويف</option>
-            <option>المنيا</option>
-            <option>أسيوط</option>
-            <option>سوهاج</option>
-            <option>قنا</option>
-            <option>الأقصر</option>
-            <option>أسوان</option>
-            <option>مطروح</option>
-            <option>البحر الأحمر</option>
-            <option>جنوب سيناء</option>
-            <option>شمال سيناء</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>المركز / المدينة</label>
-          <select id="d-city">
-            <option value="">اختر المحافظة أولاً</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>وصف العرض وتفاصيله</label>
-        <textarea id="d-desc" placeholder="اشرح تفاصيل العرض والمنتجات المتاحة..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>رابط العرض (اختياري)</label>
-        <input type="text" id="d-link" placeholder="https://...">
-      </div>
-
-      <button class="btn-save btn-blue" onclick="saveDeal()">💾 حفظ ونشر العرض الآن</button>
-    </div>
+<!-- ===== NAV ===== -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')">
+    <img src="logo.png" alt="شيكس" onerror="this.style.display='none';document.getElementById('logo-text').style.display='block'">
+    <span id="logo-text" class="nav-logo-text" style="display:none">شيكس</span>
+  </a>
+  <div class="nav-links">
+    <a class="active" id="nav-home" onclick="showPage('home')">الرئيسية</a>
+    <a id="nav-deals" onclick="showPage('deals')">العروض</a>
+    <a id="nav-blog" onclick="showPage('blog')">المدونة</a>
+    <a id="nav-partners" onclick="showPage('partners')">الشراكات</a>
+    <a id="nav-contact" onclick="showPage('contact')">تواصل معنا</a>
   </div>
-
-  <!-- ===== إضافة مقالة ===== -->
-  <div id="tab-blog" class="tab">
-    <div class="page-title">📝 كتابة مقالة جديدة</div>
-    <div class="card">
-      <div class="card-title">تفاصيل المقالة</div>
-
-      <div class="form-group">
-        <label>📷 صورة المقالة</label>
-        <div class="img-upload" id="blog-upload-area">
-          <input type="file" accept="image/*" onchange="handleImg(this,'blog-preview','blog-img-data')">
-          <div id="blog-upload-placeholder">
-            <div class="icon">🖼️</div>
-            <p>اضغط لاختيار صورة</p>
-          </div>
-          <img id="blog-preview" class="img-preview" alt="">
-        </div>
-        <input type="hidden" id="blog-img-data">
-      </div>
-
-      <div class="form-group">
-        <label>عنوان المقالة *</label>
-        <input type="text" id="b-title" placeholder="أدخل عنواناً جذاباً للمقالة...">
-      </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>القسم</label>
-          <select id="b-cat">
-            <option value="">اختر القسم</option>
-            <option>نصائح تسوق</option>
-            <option>فلوجات</option>
-            <option>لايف ستايل</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>الحالة</label>
-          <select id="b-status">
-            <option value="published">منشور ✅</option>
-            <option value="draft">مسودة</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>محتوى المقالة *</label>
-        <textarea id="b-content" style="height:160px" placeholder="اكتب محتوى المقالة هنا..."></textarea>
-      </div>
-
-      <button class="btn-save btn-green" onclick="saveBlog()">🚀 نشر المقالة الآن</button>
-    </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a class="btn-nav-cta" onclick="showPage('deals')">استكشف العروض ←</a>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
   </div>
+</nav>
 
-  <!-- ===== عرض العروض ===== -->
-  <div id="tab-view-deals" class="tab">
-    <div class="page-title">📋 جميع العروض</div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <div id="deals-table-wrap"><div class="loading">⏳ جاري التحميل...</div></div>
-    </div>
-  </div>
-
-  <!-- ===== عرض المقالات ===== -->
-  <div id="tab-view-blog" class="tab">
-    <div class="page-title">📰 جميع المقالات</div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <div id="blog-table-wrap"><div class="loading">⏳ جاري التحميل...</div></div>
-    </div>
-  </div>
-
-</main>
-
-<!-- TOAST -->
-<div class="toast" id="toast"><span id="toast-text"></span></div>
-
-<script>
-// ===== SUPABASE =====
-const SUPA_URL = 'https://xxsmdktshnysesxawyjq.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-
-// ===== CITIES DATA =====
-const CITIES = {
-  'القاهرة': ['مدينة نصر','المعادي','حلوان','التجمع الأول','التجمع الخامس','مصر الجديدة','الزيتون','عين شمس','شبرا','المطرية','المنيل','الدقي','الزمالك','وسط البلد','15 مايو','أوسيم','إمبابة'],
-  'الجيزة': ['الدقي','العجوزة','المهندسين','6 أكتوبر','الشيخ زايد','الهرم','فيصل','بولاق الدكرور','أبو النمرس','البدرشين','الصف'],
-  'الشرقية': ['الزقازيق','أبو حماد','أبو كبير','الإبراهيمية','بلبيس','ديرب نجم','فاقوس','الحسينية','ههيا','منيا القمح','مشتول السوق','القنايات','الصالحية الجديدة','كفر صقر','العاشر من رمضان','أجا'],
-  'الدقهلية': ['المنصورة','طلخا','ميت غمر','أجا','السنبلاوين','بلقاس','دكرنس','شربين','منية النصر','نبروه'],
-  'الإسكندرية': ['المنتزه','العجمي','الأنفوشي','باب شرق','المنشية','الرمل','سيدي جابر','سيدي بشر','محرم بك','كامب شيزار','لوران','الإبراهيمية','العطارين','سموحة'],
-  'الغربية': ['طنطا','المحلة الكبرى','كفر الزيات','زفتى','السنطة','قطور','بسيون'],
-  'المنوفية': ['شبين الكوم','مينوف','أشمون','الباجور','قويسنا','بركة السبع','تلا','الشهداء'],
-  'البحيرة': ['دمنهور','كفر الدوار','رشيد','إيتاي البارود','أبو حمص','الدلنجات','المحمودية','حوش عيسى'],
-  'كفر الشيخ': ['كفر الشيخ','دسوق','فوه','قلين','برج البرلس','بيلا','مطوبس','الحامول'],
-  'دمياط': ['دمياط','رأس البر','الزرقا','فارسكور','كفر سعد','عزبة البرج'],
-  'بورسعيد': ['حي الشرق','حي الغرب','حي الجنوب','حي الشمال','بورفؤاد'],
-  'الإسماعيلية': ['الإسماعيلية','القنطرة شرق','القنطرة غرب','فايد','القصاصين','التل الكبير'],
-  'السويس': ['حي الأربعين','حي الجناين','حي السويس','عتاقة','فيصل'],
-  'الفيوم': ['الفيوم','سنورس','إطسا','طامية','يوسف الصديق','أبشواي'],
-  'بني سويف': ['بني سويف','الفشن','ببا','إهناسيا','الواسطى','نزلة'],
-  'المنيا': ['المنيا','ملوي','سمالوط','مغاغة','بني مزار','أبو قرقاص','العدوة'],
-  'أسيوط': ['أسيوط','ديروط','منفلوط','أبنوب','القوصية','البداري','صدفا'],
-  'سوهاج': ['سوهاج','أخميم','جرجا','دار السلام','المراغة','طهطا','البلينا'],
-  'قنا': ['قنا','نجع حمادي','دشنا','قفط','قوص','الوقف','أبو تشت'],
-  'الأقصر': ['الأقصر','إسنا','الأقصر مدينة','الزينية'],
-  'أسوان': ['أسوان','كوم أمبو','إدفو','نصر النوبة','درو','أبو سمبل'],
-  'مطروح': ['مرسى مطروح','سيوة','الضبعة','السلوم','النجيلة'],
-  'البحر الأحمر': ['الغردقة','سفاجا','القصير','مرسى علم','رأس غارب'],
-  'جنوب سيناء': ['شرم الشيخ','دهب','نويبع','طابا','أبو رديس','القاهرة'],
-  'شمال سيناء': ['العريش','رفح','بئر العبد','الشيخ زويد','الحسنة']
-};
-
-// ===== NAVIGATION =====
-function showTab(name, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'view-deals') loadDealsTable();
-  if (name === 'view-blog') loadBlogTable();
-}
-
-// ===== CITIES =====
-function fillCities() {
-  const gov = document.getElementById('d-gov').value;
-  const sel = document.getElementById('d-city');
-  sel.innerHTML = '<option value="">اختر المركز</option>';
-  if (CITIES[gov]) {
-    CITIES[gov].forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
-  }
-}
-
-// ===== IMAGE HANDLER =====
-function handleImg(input, previewId, dataId) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { toast('⚠️ الصورة أكبر من 2MB', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById(dataId).value = e.target.result;
-    const prev = document.getElementById(previewId);
-    prev.src = e.target.result;
-    prev.style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-}
-
-// ===== SAVE DEAL =====
-async function saveDeal() {
-  const name = document.getElementById('d-name').value.trim();
-  const discount = document.getElementById('d-discount').value;
-  if (!name) { toast('⚠️ برجاء إدخال اسم العرض', 'error'); return; }
-  if (!discount) { toast('⚠️ برجاء إدخال نسبة الخصم', 'error'); return; }
-
-  const btn = document.querySelector('#tab-deals .btn-save');
-  btn.textContent = '⏳ جاري الحفظ...';
-  btn.disabled = true;
-
-  const data = {
-    name,
-    discount: parseInt(discount),
-    governorate: document.getElementById('d-gov').value,
-    city: document.getElementById('d-city').value,
-    description: document.getElementById('d-desc').value.trim(),
-    image: document.getElementById('deal-img-data').value,
-    status: document.getElementById('d-status').value,
-    category: document.getElementById('d-cat').value,
-    link: document.getElementById('d-link').value.trim()
-  };
-
-  const { error } = await sb.from('deals').insert([data]);
-
-  btn.textContent = '💾 حفظ ونشر العرض الآن';
-  btn.disabled = false;
-
-  if (error) {
-    console.error(error);
-    toast('❌ خطأ: ' + error.message, 'error');
-  } else {
-    toast('✅ تم حفظ العرض بنجاح!', 'success');
-    // reset form
-    document.getElementById('d-name').value = '';
-    document.getElementById('d-discount').value = '';
-    document.getElementById('d-desc').value = '';
-    document.getElementById('d-link').value = '';
-    document.getElementById('d-gov').value = '';
-    document.getElementById('d-city').innerHTML = '<option value="">اختر المحافظة أولاً</option>';
-    document.getElementById('d-cat').value = '';
-    document.getElementById('d-status').value = 'active';
-    document.getElementById('deal-img-data').value = '';
-    document.getElementById('deal-preview').style.display = 'none';
-  }
-}
-
-// ===== SAVE BLOG =====
-async function saveBlog() {
-  const title = document.getElementById('b-title').value.trim();
-  const content = document.getElementById('b-content').value.trim();
-  if (!title) { toast('⚠️ برجاء إدخال عنوان المقالة', 'error'); return; }
-  if (!content) { toast('⚠️ برجاء كتابة محتوى المقالة', 'error'); return; }
-
-  const btn = document.querySelector('#tab-blog .btn-save');
-  btn.textContent = '⏳ جاري النشر...';
-  btn.disabled = true;
-
-  const data = {
-    title,
-    content,
-    image: document.getElementById('blog-img-data').value,
-    author: 'Shekss Admin',
-    category: document.getElementById('b-cat').value,
-    status: document.getElementById('b-status').value
-  };
-
-  const { error } = await sb.from('blogs').insert([data]);
-
-  btn.textContent = '🚀 نشر المقالة الآن';
-  btn.disabled = false;
-
-  if (error) {
-    console.error(error);
-    toast('❌ خطأ: ' + error.message, 'error');
-  } else {
-    toast('✅ تم نشر المقالة بنجاح!', 'success');
-    document.getElementById('b-title').value = '';
-    document.getElementById('b-content').value = '';
-    document.getElementById('b-cat').value = '';
-    document.getElementById('b-status').value = 'published';
-    document.getElementById('blog-img-data').value = '';
-    document.getElementById('blog-preview').style.display = 'none';
-  }
-}
-
-// ===== LOAD DEALS TABLE =====
-async function loadDealsTable() {
-  const wrap = document.getElementById('deals-table-wrap');
-  wrap.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
-  const { data, error } = await sb.from('deals').select('*').order('created_at',
+<!-- Mobile Menu -->
+<div id="mobile-menu" style="display:none;position:fixed;top:68px;right:0;left:0;background:white;z-index:99;b
