@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shekss Admin - لوحة التحكم</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+
+// ===== MESSAGES =====
+let allMessages = [];
+let msgFilter = 'all';
+
+async function loadMessages() {
+  const wrap = document.getElementById('msgs-container');
+  wrap.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">⏳ جاري التحميل...</div>';
+  
+  const { data, error } = await sb.from('messages').select('*').order('created_at', { ascending: false });
+  
+  if (error) { 
+    wrap.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ خطأ: ' + error.message + '</div>'; 
+    return; 
+  }
+  
+  allMessages = data || [];
+  renderMessages();
+  updateUnreadBadge();
+}
+
+function renderMessages() {
+  const wrap = document.getElementById('msgs-container');
+  const countEl = document.getElementById('msgs-count');
+  
+  let filtered = allMessages;
+  if (msgFilter === 'unread') filtered = allMessages.filter(m => !m.read);
+  
+  countEl.textContent = filtered.length + ' رسالة' + (msgFilter === 'unread' ? ' غير مقروءة' : '');
+  
+  if (filtered.length === 0) {
+    wrap.innerHTML = '<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:48px;margin-bottom:12px;">✉️</div><p>لا توجد رسائل</p></div>';
+    return;
+  }
+  
+  wrap.innerHTML = filtered.map(m => `
+    <div class="msg-card ${m.read ? '' : 'unread'}" id="msg-${m.id}">
+      <div class="msg-head">
+        <div>
+          <div class="msg-name">
+            ${!m.read ? '<span class="msg-unread-dot"></span>' : ''}
+            ${m.name || 'بدون اسم'}
+          </div>
+          <div class="msg-email">📧 ${m.email || '—'}</div>
+        </div>
+        <div class="msg-meta">
+          <div class="msg-type">${m.type || 'استفسار'}</div>
+          <div>${m.created_at ? new Date(m.created_at).toLocaleDateString('ar-EG') + ' - ' + new Date(m.created_at).toLocaleTimeString('ar-EG', {hour:'2-digit',minute:'2-digit'}) : ''}</div>
+        </div>
+      </div>
+      <div class="msg-body">${m.msg || '—'}</div>
+      <div class="msg-actions">
+        ${!m.read ? `<button class="btn-save btn-edit" onclick="markRead('${m.id}')">✓ تعليم كمقروءة</button>` : '<span style="font-size:12px;color:#10b981;font-weight:700;">✓ مقروءة</span>'}
+        <a href="mailto:${m.email}" class="btn-save" style="background:#ecfdf5;color:#10b981;text-decoration:none;padding:7px 14px;font-size:12px;">📧 رد بالإيميل</a>
+        <a href="https://wa.me/${(m.email||'').includes('@') ? '' : m.email}" class="btn-save" style="background:#f0fdf4;color:#16a34a;text-decoration:none;padding:7px 14px;font-size:12px;display:${m.phone ? 'inline-flex' : 'none'};">💬 واتساب</a>
+        <button class="btn-save btn-red" onclick="deleteMsg('${m.id}')">🗑️ حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterMsgs(type) {
+  msgFilter = type;
+  renderMessages();
+}
+
+async function markRead(id) {
+  const { error } = await sb.from('messages').update({ read: true }).eq('id', id);
+  if (!error) {
+    const m = allMessages.find(x => x.id === id);
+    if (m) m.read = true;
+    renderMessages();
+    updateUnreadBadge();
+    toast('✅ تم التعليم كمقروءة', 'success');
+  }
+}
+
+async function markAllRead() {
+  const { error } = await sb.from('messages').update({ read: true }).eq('read', false);
+  if (!error) {
+    allMessages.forEach(m => m.read = true);
+    renderMessages();
+    updateUnreadBadge();
+    toast('✅ تم تعليم الكل كمقروء', 'success');
+  }
+}
+
+async function deleteMsg(id) {
+  if (!confirm('هل أنت متأكد من حذف هذه الرسالة؟')) return;
+  const { error } = await sb.from('messages').delete().eq('id', id);
+  if (!error) {
+    allMessages = allMessages.filter(m => m.id !== id);
+    renderMessages();
+    updateUnreadBadge();
+    toast('🗑️ تم الحذف', 'success');
+  }
+}
+
+function updateUnreadBadge() {
+  const unread = allMessages.filter(m => !m.read).length;
+  const badge = document.getElementById('unread-badge');
+  if (badge) {
+    badge.textContent = unread;
+    badge.style.display = unread > 0 ? 'inline-block' : 'none';
+  }
+}
+
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { --blue:#2563eb; --dark:#0f172a; --bg:#f1f5f9; --green:#10b981; --red:#ef4444; --orange:#f97316; }
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
+body { background:var(--bg); display:flex; min-height:100vh; direction:rtl; }
+
+.sidebar { width:240px; background:var(--dark); color:white; position:fixed; right:0; height:100vh; padding:20px; display:flex; flex-direction:column; z-index:100; }
+.logo { font-weight:900; font-size:20px; margin-bottom:30px; text-align:center; color:#38bdf8; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.nav-btn { width:100%; padding:13px 16px; background:none; border:none; color:#94a3b8; text-align:right; cursor:pointer; border-radius:10px; margin-bottom:6px; font-weight:700; font-size:14px; font-family:'Cairo',sans-serif; transition:all 0.2s; display:flex; align-items:center; gap:8px; }
+.nav-btn:hover { background:rgba(255,255,255,0.08); color:white; }
+.nav-btn.active { background:var(--blue); color:white; }
+
+.main { margin-right:240px; flex:1; padding:28px; }
+.tab { display:none; }
+.tab.active { display:block; }
+
+.page-title { font-size:22px; font-weight:900; margin-bottom:24px; color:#1e293b; }
+
+.card { background:white; padding:24px; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:24px; }
+.card-title { font-size:16px; font-weight:800; margin-bottom:20px; color:#1e293b; padding-bottom:12px; border-bottom:1px solid #f1f5f9; }
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-group { margin-bottom:16px; }
+.form-group.full { grid-column:1/-1; }
+label { display:block; margin-bottom:6px; font-weight:700; font-size:13px; color:#475569; }
+input[type=text], input[type=number], input[type=email], select, textarea {
+  width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:9px;
+  font-family:'Cairo',sans-serif; font-size:14px; outline:none; transition:border 0.2s; background:#fafafa;
+}
+input:focus, select:focus, textarea:focus { border-color:var(--blue); background:white; box-shadow:0 0 0 3px rgba(37,99,235,0.08); }
+textarea { height:110px; resize:vertical; }
+
+.img-upload { border:2px dashed #e2e8f0; border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s; background:#fafafa; position:relative; }
+.img-upload:hover { border-color:var(--blue); background:#eff6ff; }
+.img-upload input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.img-upload .icon { font-size:28px; margin-bottom:6px; }
+.img-upload p { font-size:13px; color:#94a3b8; }
+.img-preview { width:100%; max-height:150px; object-fit:contain; border-radius:8px; margin-top:10px; display:none; }
+
+.btn-save { padding:13px 24px; border:none; border-radius:10px; cursor:pointer; font-weight:800; font-size:15px; font-family:'Cairo',sans-serif; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+.btn-blue { background:var(--blue); color:white; width:100%; justify-content:center; }
+.btn-blue:hover { background:#1d4ed8; transform:translateY(-1px); }
+.btn-green { background:var(--green); color:white; width:100%; justify-content:center; }
+.btn-green:hover { background:#059669; }
+.btn-red { background:#fef2f2; color:var(--red); padding:7px 14px; font-size:12px; }
+.btn-red:hover { background:var(--red); color:white; }
+.btn-edit { background:#eff6ff; color:var(--blue); padding:7px 14px; font-size:12px; }
+.btn-edit:hover { background:var(--blue); color:white; }
+
+table { width:100%; border-collapse:collapse; }
+th { padding:12px 16px; text-align:right; font-size:12px; font-weight:800; color:#64748b; background:#f8fafc; border-bottom:2px solid #e2e8f0; }
+td { padding:14px 16px; border-bottom:1px solid #f1f5f9; font-size:13px; vertical-align:middle; }
+tr:hover td { background:#fafafa; }
+.deal-img-cell { width:50px; height:50px; border-radius:8px; object-fit:cover; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:20px; }
+.deal-img-cell img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
+.badge { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge-green { background:#ecfdf5; color:var(--green); }
+.badge-red { background:#fef2f2; color:var(--red); }
+.badge-blue { background:#eff6ff; color:var(--blue); }
+
+.toast { position:fixed; bottom:24px; left:24px; z-index:999; padding:14px 20px; border-radius:12px; font-size:14px; font-weight:700; color:white; display:none; align-items:center; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,0.15); animation:slideUp 0.3s ease; }
+.toast.show { display:flex; }
+.toast.success { background:#10b981; }
+.toast.error { background:#ef4444; }
+@keyframes slideUp { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+
+.loading { text-align:center; padding:40px; color:#94a3b8; font-size:14px; }
+.empty { text-align:center; padding:50px; color:#94a3b8; }
+.empty .icon { font-size:40px; margin-bottom:10px; }
+
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+.stat { background:white; padding:20px; border-radius:12px; border-right:4px solid var(--blue); }
+.stat.green { border-color:var(--green); }
+.stat.orange { border-color:var(--orange); }
+.stat-val { font-size:28px; font-weight:900; color:#1e293b; }
+.stat-lbl { font-size:13px; color:#94a3b8; margin-top:4px; }
+
+@media(max-width:700px){
+  .sidebar{width:100%;height:auto;position:relative;}
+  .main{margin-right:0;}
+  .form-grid{grid-template-columns:1fr;}
+  .stats{grid-template-columns:1fr 1fr;}
+}
+
+/* MSG CARDS */
+.msg-card{background:white;border-radius:12px;border:1px solid #e2e8f0;padding:20px;margin-bottom:14px;transition:all 0.2s;position:relative;}
+.msg-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);}
+.msg-card.unread{border-right:4px solid #2563eb;background:#fefefe;}
+.msg-unread-dot{width:8px;height:8px;border-radius:50%;background:#2563eb;display:inline-block;margin-left:8px;}
+.msg-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.msg-name{font-weight:800;font-size:15px;color:#1e293b;}
+.msg-email{font-size:12px;color:#94a3b8;margin-top:2px;}
+.msg-meta{text-align:left;font-size:12px;color:#94a3b8;}
+.msg-type{display:inline-block;background:#eff6ff;color:#2563eb;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:4px;}
+.msg-body{font-size:14px;color:#475569;line-height:1.7;background:#f8fafc;padding:14px;border-radius:8px;white-space:pre-wrap;margin-bottom:14px;}
+.msg-actions{display:flex;gap:8px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- ===== PASSWORD SCREEN ===== -->
+<div id="login-screen" style="position:fixed;inset:0;background:linear-gradient(135deg,#1e293b,#2563eb);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:white;border-radius:20px;padding:40px 36px;width:90%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:48px;margin-bottom:12px;">🛍️</div>
+    <h2 style="font-family:'Cairo',sans-serif;font-size:22px;font-weight:900;color:#1e293b;margin-bottom:6px;">Shekss Admin</h2>
+    <p style="font-family:'Cairo',sans-serif;font-size:13px;color:#94a3b8;margin-bottom:24px;">أدخل كلمة المرور للدخول</p>
+    <input type="password" id="pw-input" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')checkPw()" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-family:'Cairo',sans-serif;font-size:15px;text-align:center;box-sizing:border-box;margin-bottom:12px;outline:none;">
+    <p id="pw-error" style="color:#ef4444;font-family:'Cairo',sans-serif;font-size:13px;margin-bottom:12px;display:none;">❌ كلمة المرور غلط، حاول تاني</p>
+    <button onclick="checkPw()" style="width:100%;background:#2563eb;color:white;border:none;padding:13px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;cursor:pointer;">دخول 🔐</button>
+  </div>
+</div>
+
+<aside class="sidebar" id="main-content" style="display:none;">
+  <div class="logo">🛍️ Shekss Admin</div>
+  <button class="nav-btn active" onclick="showTab('deals',this)">🏷️ إدارة العروض</button>
+  <button class="nav-btn" onclick="showTab('blog',this)">📝 إدارة المدونة</button>
+  <button class="nav-btn" onclick="showTab('view-deals',this)">📋 عرض العروض</button>
+  <button class="nav-btn" onclick="showTab('view-blog',this)">📰 عرض المقالات</button>
+  <button class="nav-btn" onclick="showTab('coupons',this)">🎟️ الكوبونات</button>
+  <button class="nav-btn" onclick="showTab('partnerships',this)">🤝 طلبات الشراكة <span id="pending-badge" style="background:#f97316;color:white;font-size:10px;padding:2px 7px;border-radius:10px;margin-right:auto;display:none;">0</span></button>
+  <button class="nav-btn" onclick="showTab('messages',this)">✉️ الرسائل <span id="unread-badge" style="background:#ef4444;color:white;font-size:10px;padding:2px 7px;border-radius:10px;margin-right:auto;display:none;">0</span></button>
+</aside>
+
+<main class="main" id="main-area" style="display:none;">
+
+  <!-- ===== إضافة عرض ===== -->
+  <div id="tab-deals" class="tab active">
+    <div class="page-title">➕ إضافة عرض جديد</div>
+
+    <!-- نوع العرض - تابين واضحين -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+      <button id="deal-type-online" onclick="setDealType('online')" style="flex:1;padding:16px;border:2.5px solid #2563eb;background:#2563eb;color:white;border-radius:14px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.2s;">
+        🌐 عرض أونلاين<br><span style="font-size:12px;font-weight:400;opacity:0.85;">متاح لكل مصر</span>
+      </button>
+      <button id="deal-type-offline" onclick="setDealType('offline')" style="flex:1;padding:16px;border:2.5px solid #e2e8f0;background:white;color:#475569;border-radius:14px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.2s;">
+        📍 عرض أوف لاين<br><span style="font-size:12px;font-weight:400;">جمبي - محدد بمكان</span>
+      </button>
+    </div>
+    <input type="hidden" id="d-deal-type" value="online">
+
+    <div class="card">
+      <div class="card-title" id="deal-form-title">🌐 تفاصيل العرض الأونلاين</div>
+
+      <!-- صورتين -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>📷 الصورة الرئيسية *</label>
+          <div class="img-upload" id="deal-upload-area">
+            <input type="file" accept="image/*" onchange="handleImg(this,'deal-preview','deal-img-data')">
+            <div id="deal-upload-placeholder">
+              <div class="icon">🖼️</div>
+              <p>الصورة الرئيسية للمنتج</p>
+              <p style="font-size:11px;margin-top:4px">PNG, JPG, WebP - أقصى 2MB</p>
+            </div>
+            <img id="deal-preview" class="img-preview" alt="">
+          </div>
+          <input type="hidden" id="deal-img-data">
+        </div>
+        <div class="form-group">
+          <label>📷 صورة إضافية (اختياري)</label>
+          <div class="img-upload" id="deal-upload-area-2">
+            <input type="file" accept="image/*" onchange="handleImg(this,'deal-preview-2','deal-img-data-2')">
+            <div id="deal-upload-placeholder-2">
+              <div class="icon">🖼️</div>
+              <p>صورة تفاصيل أو عرض إضافي</p>
+              <p style="font-size:11px;margin-top:4px">PNG, JPG, WebP - أقصى 2MB</p>
+            </div>
+            <img id="deal-preview-2" class="img-preview" alt="">
+          </div>
+          <input type="hidden" id="deal-img-data-2">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>اسم المحل / العلامة التجارية *</label>
+          <input type="text" id="d-name" placeholder="مثلاً: كارفور الشرقية">
+        </div>
+        <div class="form-group">
+          <label>نسبة الخصم (%) *</label>
+          <input type="number" id="d-discount" placeholder="مثلاً: 30" min="1" max="99">
+        </div>
+        <div class="form-group">
+          <label>القسم</label>
+          <select id="d-cat" onchange="fillSubcats()">
+            <option value="">اختر القسم</option>
+            <!-- أونلاين -->
+            <optgroup label="🌐 أقسام أونلاين" id="online-cats-group">
+              <option value="electronics">📱 إلكترونيات</option>
+              <option value="fashion">👗 أزياء</option>
+              <option value="home">🏠 المنزل</option>
+              <option value="beauty">💄 الجمال</option>
+              <option value="supermarket">🛒 سوبر ماركت</option>
+              <option value="kids">👶 أطفال</option>
+              <option value="sports">⚽ رياضة</option>
+              <option value="travel">✈️ سفر</option>
+              <option value="subscriptions">📺 اشتراكات</option>
+            </optgroup>
+            <!-- أوف لاين / جمبي -->
+            <optgroup label="📍 أقسام جمبي" id="offline-cats-group">
+              <option value="restaurants">🍔 مطاعم</option>
+              <option value="cafes">☕ كافيهات</option>
+              <option value="fashion">👗 ملابس</option>
+              <option value="shoes">👟 أحذية</option>
+              <option value="gyms">💪 جيمات</option>
+              <option value="services">🔧 خدمات</option>
+              <option value="hotels">🏨 فنادق</option>
+              <option value="cars">🚗 سيارات</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>القسم الفرعي (اختياري)</label>
+          <select id="d-subcat">
+            <option value="">اختر القسم الفرعي</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>الحالة</label>
+          <select id="d-status" onchange="toggleExpiry()">
+            <option value="active">نشط ✅</option>
+            <option value="hot">عرض ساخن 🔥</option>
+            <option value="expired">منتهي</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- الموقع الجغرافي - يظهر فقط في أوف لاين -->
+      <div id="location-section">
+        <p style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📍 الموقع الجغرافي <span style="font-weight:400;">(اختياري)</span></p>
+        <div class="form-group">
+          <label>🏪 اسم المحل (للعروض الأوف لاين)</label>
+          <input type="text" id="d-store-name" placeholder="مثلاً: كافيه النخبة، مطعم السلطان">
+          <p style="font-size:11px;color:#94a3b8;margin-top:4px;">اسم المحل هيظهر على كارت العرض</p>
+        </div>
+        <div class="form-group">
+          <label>🗺️ لينك Google Maps للمحل</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="d-maps-link" placeholder="الصق لينك Google Maps هنا..." style="flex:1;" oninput="extractCoordsFromMaps(this.value)">
+            <button type="button" onclick="extractCoordsFromMaps(document.getElementById('d-maps-link').value)" style="padding:10px 14px;background:#2563eb;color:white;border:none;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700;white-space:nowrap;">📍 استخراج</button>
+          </div>
+          <p style="font-size:11px;color:#94a3b8;margin-top:4px;">افتح Google Maps → شارك الموقع → انسخ اللينك والصقه هنا</p>
+          <div id="coords-display" style="display:none;margin-top:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px;font-size:12px;color:#16a34a;font-weight:700;"></div>
+        </div>
+        <div class="form-group">
+          <label>📌 عنوان المحل (اختياري)</label>
+          <input type="text" id="d-address" placeholder="مثلاً: شارع التحرير، وسط البلد، القاهرة">
+          <p style="font-size:11px;color:#94a3b8;margin-top:4px;" id="geo-status"></p>
+          <input type="hidden" id="d-lat">
+          <input type="hidden" id="d-lng">
+        </div>
+        <div class="form-grid">
+        <div class="form-group">
+          <label>المحافظة</label>
+          <select id="d-gov" onchange="fillCities()">
+            <option value="">اختر المحافظة</option>
+            <option>القاهرة</option>
+            <option>الجيزة</option>
+            <option>الشرقية</option>
+            <option>الدقهلية</option>
+            <option>الإسكندرية</option>
+            <option>الغربية</option>
+            <option>المنوفية</option>
+            <option>البحيرة</option>
+            <option>كفر الشيخ</option>
+            <option>دمياط</option>
+            <option>بورسعيد</option>
+            <option>الإسماعيلية</option>
+            <option>السويس</option>
+            <option>الفيوم</option>
+            <option>بني سويف</option>
+            <option>المنيا</option>
+            <option>أسيوط</option>
+            <option>سوهاج</option>
+            <option>قنا</option>
+            <option>الأقصر</option>
+            <option>أسوان</option>
+            <option>مطروح</option>
+            <option>البحر الأحمر</option>
+            <option>جنوب سيناء</option>
+            <option>شمال سيناء</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>المركز / المدينة</label>
+          <select id="d-city">
+            <option value="">اختر المحافظة أولاً</option>
+          </select>
+        </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>وصف العرض وتفاصيله</label>
+        <textarea id="d-desc" placeholder="اشرح تفاصيل العرض والمنتجات المتاحة..."></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>💰 السعر بالجنيه (اختياري)</label>
+          <input type="number" id="d-price" placeholder="مثلاً: 299" min="0">
+        </div>
+        <div class="form-group">
+          <label>رابط العرض (اختياري)</label>
+          <input type="text" id="d-link" placeholder="https://...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>🎟️ كود الكوبون (اختياري)</label>
+        <input type="text" id="d-coupon" placeholder="مثلاً: NOON20 أو SHEKSS15" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;">
+        <p style="font-size:11px;color:#94a3b8;margin-top:4px;">الكود هيظهر في كارت العرض ويقدر العميل ينسخه بضغطة</p>
+      </div>
+
+      <!-- وقت انتهاء العرض الساخن -->
+      <div class="form-group" id="expiry-section" style="display:none;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:14px 16px;">
+        <label style="color:#ea580c;font-weight:800;">⏰ وقت انتهاء العرض الساخن (اختياري)</label>
+        <input type="datetime-local" id="d-expiry" style="margin-top:8px;">
+        <p style="font-size:11px;color:#94a3b8;margin-top:4px;">لو حددت وقت، العرض هيتحول أوتوماتيك لـ "منتهي" بعد الوقت ده</p>
+      </div>
+      <input type="hidden" id="d-edit-id">
+      <button class="btn-save btn-blue" onclick="saveDeal()">💾 حفظ ونشر العرض الآن</button>
+    </div>
+  </div>
+
+  <!-- ===== إضافة مقالة ===== -->
+  <div id="tab-blog" class="tab">
+    <div class="page-title">📝 كتابة مقالة جديدة</div>
+    <div class="card">
+      <div class="card-title">تفاصيل المقالة</div>
+
+      <div class="form-group">
+        <label>📷 صورة المقالة</label>
+        <div class="img-upload" id="blog-upload-area">
+          <input type="file" accept="image/*" onchange="handleImg(this,'blog-preview','blog-img-data')">
+          <div id="blog-upload-placeholder">
+            <div class="icon">🖼️</div>
+            <p>اضغط لاختيار صورة</p>
+          </div>
+          <img id="blog-preview" class="img-preview" alt="">
+        </div>
+        <input type="hidden" id="blog-img-data">
+      </div>
+
+      <div class="form-group">
+        <label>عنوان المقالة *</label>
+        <input type="text" id="b-title" placeholder="أدخل عنواناً جذاباً للمقالة...">
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>القسم</label>
+          <select id="b-cat">
+            <option value="">اختر القسم</option>
+            <option>نصائح تسوق</option>
+            <option>فلوجات</option>
+            <option>لايف ستايل</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الحالة</label>
+          <select id="b-status">
+            <option value="published">منشور ✅</option>
+            <option value="draft">مسودة</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>محتوى المقالة *</label>
+        <textarea id="b-content" style="height:160px" placeholder="اكتب محتوى المقالة هنا..."></textarea>
+      </div>
+
+      <button class="btn-save btn-green" onclick="saveBlog()">🚀 نشر المقالة الآن</button>
+    </div>
+  </div>
+
+  <!-- ===== عرض العروض ===== -->
+  <div id="tab-view-deals" class="tab">
+    <div class="page-title">📋 جميع العروض</div>
+    <div class="card" style="padding:16px;margin-bottom:12px;">
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input type="text" id="deals-search-input" placeholder="🔍 ابحث باسم العرض أو القسم أو المحافظة..."
+          style="flex:1;padding:12px 16px;border:2px solid #e2e8f0;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;outline:none;transition:border 0.2s;"
+          oninput="filterDealsTable(this.value)"
+          onfocus="this.style.borderColor='#2563eb'"
+          onblur="this.style.borderColor='#e2e8f0'">
+        <button onclick="document.getElementById('deals-search-input').value='';filterDealsTable('')"
+          style="padding:12px 16px;background:#f1f5f9;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#64748b;">
+          مسح ✕
+        </button>
+      </div>
+      <div id="deals-search-count" style="font-size:12px;color:#94a3b8;margin-top:8px;"></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="deals-table-wrap"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== عرض المقالات ===== -->
+  <div id="tab-view-blog" class="tab">
+    <div class="page-title">📰 جميع المقالات</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="blog-table-wrap"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== طلبات الشراكة ===== -->
+  <div id="tab-partnerships" class="tab">
+    <div class="page-title">🤝 طلبات الشراكة</div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <button onclick="loadPartnerships('pending')" id="pf-pending" style="padding:10px 20px;border-radius:10px;border:2px solid #f97316;background:#fff7ed;color:#f97316;font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">
+        ⏳ انتظار الموافقة
+      </button>
+      <button onclick="loadPartnerships('active')" id="pf-active" style="padding:10px 20px;border-radius:10px;border:2px solid #e2e8f0;background:white;color:#64748b;font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">
+        ✅ تمت الموافقة
+      </button>
+      <button onclick="loadPartnerships('rejected')" id="pf-rejected" style="padding:10px 20px;border-radius:10px;border:2px solid #e2e8f0;background:white;color:#64748b;font-family:'Cairo',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">
+        ❌ مرفوض
+      </button>
+    </div>
+
+    <div id="partnerships-wrap">
+      <div class="loading">⏳ جاري التحميل...</div>
+    </div>
+  </div>
+
+  <!-- ===== الرسائل ===== -->
+  <!-- ===== كوبونات ===== -->
+  <div id="tab-coupons" class="tab">
+    <div class="page-title">🎟️ إدارة الكوبونات</div>
+
+    <!-- فورم إضافة كوبون -->
+    <div class="card">
+      <div class="card-title">➕ إضافة كوبون جديد</div>
+      <input type="hidden" id="cp-edit-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>🌐 اسم الموقع *</label>
+          <input type="text" id="cp-site" placeholder="مثلاً: نون، أمازون، جوميا">
+        </div>
+        <div class="form-group">
+          <label>🎟️ الكود *</label>
+          <input type="text" id="cp-code" placeholder="مثلاً: SHEKSS15" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>📌 النوع</label>
+          <select id="cp-type">
+            <option value="خصم">خصم</option>
+            <option value="استرداد">استرداد كاش باك</option>
+            <option value="شحن مجاني">شحن مجاني</option>
+          </select>
+        </div>
+      </div>
+      <div style="background:var(--blue-light);border-radius:12px;padding:16px;margin-bottom:16px;">
+        <label style="display:block;font-size:13px;font-weight:700;margin-bottom:12px;color:var(--blue);">💰 نطاق الخصم %</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <label style="font-size:11px;color:var(--gray-400);margin-bottom:4px;display:block;">من %</label>
+            <input type="number" id="cp-discount-min" placeholder="10" min="0" max="100" style="width:100%;padding:10px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'Cairo',sans-serif;font-size:14px;text-align:center;font-weight:700;">
+          </div>
+          <div style="font-size:20px;color:var(--gray-400);padding-top:16px;">←</div>
+          <div style="flex:1;">
+            <label style="font-size:11px;color:var(--gray-400);margin-bottom:4px;display:block;">إلى %</label>
+            <input type="number" id="cp-discount-max" placeholder="30" min="0" max="100" style="width:100%;padding:10px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'Cairo',sans-serif;font-size:14px;text-align:center;font-weight:700;">
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--gray-400);margin-top:8px;">لو الخصم ثابت اكتب نفس الرقم في الخانتين — مثلاً: من 20% إلى 20%</p>
+      </div>
+      <div style="display:none;">
+      </div>
+      <div class="form-group">
+        <label>⏰ تاريخ الانتهاء (اختياري)</label>
+        <input type="datetime-local" id="cp-expires">
+      </div>
+      <div class="form-group">
+        <label>🖼️ لوجو الموقع (رابط صورة - اختياري)</label>
+        <input type="text" id="cp-logo" placeholder="https://...">
+      </div>
+      <button class="btn-save btn-blue" id="cp-save-btn" onclick="saveCoupon()">💾 حفظ الكوبون</button>
+    </div>
+
+    <!-- جدول الكوبونات -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">📋 الكوبونات الحالية</div>
+      <div id="coupons-table-wrap"></div>
+    </div>
+  </div>
+
+  <div id="tab-messages" class="tab">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div class="page-title" style="margin:0;">✉️ الرسائل والتواصل</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-save" style="background:#eff6ff;color:#2563eb;padding:8px 16px;font-size:13px;" onclick="filterMsgs('all')">الكل</button>
+        <button class="btn-save" style="background:#fffbeb;color:#f59e0b;padding:8px 16px;font-size:13px;" onclick="filterMsgs('unread')">غير مقروءة فقط</button>
+        <button class="btn-save" style="background:#ecfdf5;color:#10b981;padding:8px 16px;font-size:13px;" onclick="markAllRead()">✓ تعليم الكل كمقروء</button>
+      </div>
+    </div>
+    <div id="msgs-count" style="font-size:13px;color:#94a3b8;margin-bottom:16px;"></div>
+    <div id="msgs-container"><div style="text-align:center;padding:40px;color:#94a3b8;">⏳ جاري التحميل...</div></div>
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-text"></span></div>
+
+<script>
+// ===== SUPABASE =====
+const SUPA_URL = 'https://xxsmdktshnysesxawyjq.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4c21ka3RzaG55c2VzeGF3eWpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTU5MzksImV4cCI6MjA5MzkzMTkzOX0.KSf4cZhLtliwu_AhqYGIQADeTJ5g121DqRmncYfXV3g';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ===== CITIES DATA =====
+const CITIES = {
+  'القاهرة': ['مدينة نصر','المعادي','حلوان','التجمع الأول','التجمع الخامس','مصر الجديدة','الزيتون','عين شمس','شبرا','المطرية','المنيل','الدقي','الزمالك','وسط البلد','15 مايو','أوسيم','إمبابة'],
+  'الجيزة': ['الدقي','العجوزة','المهندسين','6 أكتوبر','الشيخ زايد','الهرم','فيصل','بولاق الدكرور','أبو النمرس','البدرشين','الصف'],
+  'الشرقية': ['الزقازيق','أبو حماد','أبو كبير','الإبراهيمية','بلبيس','ديرب نجم','فاقوس','الحسينية','ههيا','منيا القمح','مشتول السوق','القنايات','الصالحية الجديدة','كفر صقر','العاشر من رمضان','أجا'],
+  'الدقهلية': ['المنصورة','طلخا','ميت غمر','أجا','السنبلاوين','بلقاس','دكرنس','شربين','منية النصر','نبروه'],
+  'الإسكندرية': ['المنتزه','العجمي','الأنفوشي','باب شرق','المنشية','الرمل','سيدي جابر','سيدي بشر','محرم بك','كامب شيزار','لوران','الإبراهيمية','العطارين','سموحة'],
+  'الغربية': ['طنطا','المحلة الكبرى','كفر الزيات','زفتى','السنطة','قطور','بسيون'],
+  'المنوفية': ['شبين الكوم','مينوف','أشمون','الباجور','قويسنا','بركة السبع','تلا','الشهداء'],
+  'البحيرة': ['دمنهور','كفر الدوار','رشيد','إيتاي البارود','أبو حمص','الدلنجات','المحمودية','حوش عيسى'],
+  'كفر الشيخ': ['كفر الشيخ','دسوق','فوه','قلين','برج البرلس','بيلا','مطوبس','الحامول'],
+  'دمياط': ['دمياط','رأس البر','الزرقا','فارسكور','كفر سعد','عزبة البرج'],
+  'بورسعيد': ['حي الشرق','حي الغرب','حي الجنوب','حي الشمال','بورفؤاد'],
+  'الإسماعيلية': ['الإسماعيلية','القنطرة شرق','القنطرة غرب','فايد','القصاصين','التل الكبير'],
+  'السويس': ['حي الأربعين','حي الجناين','حي السويس','عتاقة','فيصل'],
+  'الفيوم': ['الفيوم','سنورس','إطسا','طامية','يوسف الصديق','أبشواي'],
+  'بني سويف': ['بني سويف','الفشن','ببا','إهناسيا','الواسطى','نزلة'],
+  'المنيا': ['المنيا','ملوي','سمالوط','مغاغة','بني مزار','أبو قرقاص','العدوة'],
+  'أسيوط': ['أسيوط','ديروط','منفلوط','أبنوب','القوصية','البداري','صدفا'],
+  'سوهاج': ['سوهاج','أخميم','جرجا','دار السلام','المراغة','طهطا','البلينا'],
+  'قنا': ['قنا','نجع حمادي','دشنا','قفط','قوص','الوقف','أبو تشت'],
+  'الأقصر': ['الأقصر','إسنا','الأقصر مدينة','الزينية'],
+  'أسوان': ['أسوان','كوم أمبو','إدفو','نصر النوبة','درو','أبو سمبل'],
+  'مطروح': ['مرسى مطروح','سيوة','الضبعة','السلوم','النجيلة'],
+  'البحر الأحمر': ['الغردقة','سفاجا','القصير','مرسى علم','رأس غارب'],
+  'جنوب سيناء': ['شرم الشيخ','دهب','نويبع','طابا','أبو رديس','القاهرة'],
+  'شمال سيناء': ['العريش','رفح','بئر العبد','الشيخ زويد','الحسنة']
+};
+
+// ===== NAVIGATION =====
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'view-deals') loadDealsTable();
+  if (name === 'coupons') loadCouponsTab();
+  if (name === 'view-blog') loadBlogTable();
+  if (name === 'messages') loadMessages();
+  if (name === 'partnerships') loadPartnerships('pending');
+}
+
+// ===== TOGGLE LOCATION =====
+// ===== DEAL TYPE SWITCH =====
+function setDealType(type) {
+  document.getElementById('d-deal-type').value = type;
+  const onBtn = document.getElementById('deal-type-online');
+  const offBtn = document.getElementById('deal-type-offline');
+  const locSection = document.getElementById('location-section');
+  const title = document.getElementById('deal-form-title');
+  const onlineCats = document.getElementById('online-cats-group');
+  const offlineCats = document.getElementById('offline-cats-group');
+
+  if (type === 'online') {
+    onBtn.style.background = '#2563eb'; onBtn.style.color = 'white'; onBtn.style.borderColor = '#2563eb';
+    offBtn.style.background = 'white'; offBtn.style.color = '#475569'; offBtn.style.borderColor = '#e2e8f0';
+    locSection.style.display = 'none';
+    title.textContent = '🌐 تفاصيل العرض الأونلاين';
+    if(onlineCats) onlineCats.style.display = '';
+    if(offlineCats) offlineCats.style.display = 'none';
+  } else {
+    offBtn.style.background = '#f97316'; offBtn.style.color = 'white'; offBtn.style.borderColor = '#f97316';
+    onBtn.style.background = 'white'; onBtn.style.color = '#475569'; onBtn.style.borderColor = '#e2e8f0';
+    locSection.style.display = 'block';
+    title.textContent = '📍 تفاصيل العرض الأوف لاين';
+    if(onlineCats) onlineCats.style.display = 'none';
+    if(offlineCats) offlineCats.style.display = '';
+  }
+}
+
+function toggleLocation(keepCat = false) {
+  const isOnline = document.getElementById('d-deal-type').value === 'online';
+  const section = document.getElementById('location-section');
+  if (isOnline) {
+    section.style.display = 'none';
+  } else {
+    section.style.display = 'block';
+  }
+  // Filter category optgroups
+  const onlineGroup = document.getElementById('online-cats-group');
+  const offlineGroup = document.getElementById('offline-cats-group');
+  if (onlineGroup) onlineGroup.style.display = isOnline ? '' : 'none';
+  if (offlineGroup) offlineGroup.style.display = !isOnline ? '' : 'none';
+  // Only reset category when user manually toggles — not when loading an existing deal
+  if (!keepCat) {
+    document.getElementById('d-cat').value = '';
+    document.getElementById('d-subcat').innerHTML = '<option value="">اختر القسم الفرعي</option>';
+  }
+}
+
+// ===== CITIES =====
+function fillCities() {
+  const gov = document.getElementById('d-gov').value;
+  const sel = document.getElementById('d-city');
+  sel.innerHTML = '<option value="">اختر المركز</option>';
+  if (CITIES[gov]) {
+    CITIES[gov].forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+  }
+}
+
+// ===== IMAGE COMPRESSION =====
+function compressToWebP(file, maxWidth=800, quality=0.75) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob), 'image/webp', quality);
+    };
+    img.src = url;
+  });
+}
+
+// رفع الصورة على Supabase Storage وإرجاع الـ URL
+async function uploadImageToStorage(file, folder='deals') {
+  const webpBlob = await compressToWebP(file);
+  const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
+  const { data, error } = await sb.storage.from('deals').upload(fileName, webpBlob, {
+    contentType: 'image/webp',
+    upsert: false
+  });
+  if (error) throw new Error('فشل رفع الصورة: ' + error.message);
+  const { data: urlData } = sb.storage.from('deals').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+async function handleImg(input, previewId, dataId) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('⚠️ الصورة أكبر من 5MB', 'error'); return; }
+  const sizeBefore = Math.round(file.size / 1024);
+  toast('⏳ جاري ضغط ورفع الصورة...', 'info');
+  try {
+    const url = await uploadImageToStorage(file);
+    document.getElementById(dataId).value = url;
+    const prev = document.getElementById(previewId);
+    prev.src = url;
+    prev.style.display = 'block';
+    toast(`✅ تم الرفع (${sizeBefore}KB → WebP URL)`, 'success');
+  } catch(e) {
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+// ===== SAVE DEAL =====
+async function saveDeal() {
+  const name = document.getElementById('d-name').value.trim();
+  const discount = document.getElementById('d-discount').value;
+  if (!name) { toast('⚠️ برجاء إدخال اسم العرض', 'error'); return; }
+  if (!discount) { toast('⚠️ برجاء إدخال نسبة الخصم', 'error'); return; }
+
+  const btn = document.querySelector('#tab-deals .btn-save');
+  btn.textContent = '⏳ جاري الحفظ...';
+  btn.disabled = true;
+
+  const isOnline = document.getElementById('d-deal-type').value === 'online';
+  const lat = document.getElementById('d-lat').value;
+  const lng = document.getElementById('d-lng').value;
+  const editId = document.getElementById('d-edit-id').value;
+
+  const data = {
+    name,
+    discount: parseInt(discount),
+    governorate: document.getElementById('d-gov').value,
+    city: document.getElementById('d-city').value,
+    description: document.getElementById('d-desc').value.trim(),
+    image: document.getElementById('deal-img-data').value,
+    image2: document.getElementById('deal-img-data-2').value || null,
+    status: document.getElementById('d-status').value,
+    category: document.getElementById('d-cat').value,
+    link: document.getElementById('d-link').value.trim(),
+    price: document.getElementById('d-price').value ? parseInt(document.getElementById('d-price').value) : null,
+    coupon_code: document.getElementById('d-coupon').value.trim().toUpperCase() || null,
+    is_offline: !isOnline,
+    subcategory: document.getElementById('d-subcat').value || null,
+    address: document.getElementById('d-address').value.trim(),
+    store_name: document.getElementById('d-store-name').value.trim() || null,
+    latitude: lat ? parseFloat(lat) : null,
+    longitude: lng ? parseFloat(lng) : null,
+    expires_at: document.getElementById('d-expiry').value ? new Date(document.getElementById('d-expiry').value).toISOString() : null
+  };
+
+  let error;
+  if (editId) {
+    ({ error } = await sb.from('deals').update(data).eq('id', editId));
+  } else {
+    ({ error } = await sb.from('deals').insert([data]));
+  }
+
+  btn.textContent = '💾 حفظ ونشر العرض الآن';
+  btn.disabled = false;
+
+  if (error) {
+    console.error(error);
+    toast('❌ خطأ: ' + error.message, 'error');
+  } else {
+    toast('✅ تم حفظ العرض بنجاح!', 'success');
+    // reset form
+    document.getElementById('d-name').value = '';
+    document.getElementById('d-discount').value = '';
+    document.getElementById('d-desc').value = '';
+    document.getElementById('d-link').value = '';
+    document.getElementById('d-price').value = '';
+    document.getElementById('d-coupon').value = '';
+    document.getElementById('d-address').value = '';
+    document.getElementById('d-store-name').value = '';
+    document.getElementById('d-maps-link').value = '';
+    document.getElementById('coords-display').style.display = 'none';
+    document.getElementById('d-lat').value = '';
+    document.getElementById('d-lng').value = '';
+    document.getElementById('geo-status').textContent = '';
+    document.getElementById('d-expiry').value = '';
+    document.getElementById('expiry-section').style.display = 'none';
+    document.getElementById('d-edit-id').value = '';
+    document.getElementById('d-online-check').checked = false;
+    toggleLocation();
+    document.getElementById('d-gov').value = '';
+    document.getElementById('d-city').innerHTML = '<option value="">اختر المحافظة أولاً</option>';
+    document.getElementById('d-cat').value = '';
+    document.getElementById('d-status').value = 'active';
+    document.getElementById('deal-img-data').value = '';
+    document.getElementById('deal-img-data-2').value = '';
+    document.getElementById('deal-preview-2').style.display = 'none';
+    document.getElementById('deal-upload-placeholder-2').style.display = 'block';
+    setDealType('online');
+    document.getElementById('deal-preview').style.display = 'none';
+    document.querySelector('#tab-deals .btn-save').textContent = '💾 حفظ ونشر العرض الآن';
+  }
+}
+
+// ===== SAVE BLOG =====
+async function saveBlog() {
+  const title = document.getElementById('b-title').value.trim();
+  const content = document.getElementById('b-content').value.trim();
+  if (!title) { toast('⚠️ برجاء إدخال عنوان المقالة', 'error'); return; }
+  if (!content) { toast('⚠️ برجاء كتابة محتوى المقالة', 'error'); return; }
+
+  const btn = document.querySelector('#tab-blog .btn-save');
+  btn.textContent = '⏳ جاري النشر...';
+  btn.disabled = true;
+
+  const data = {
+    title,
+    content,
+    image: document.getElementById('blog-img-data').value,
+    author: 'Shekss Admin',
+    category: document.getElementById('b-cat').value,
+    status: document.getElementById('b-status').value
+  };
+
+  const { error } = await sb.from('blogs').insert([data]);
+
+  btn.textContent = '🚀 نشر المقالة الآن';
+  btn.disabled = false;
+
+  if (error) {
+    console.error(error);
+    toast('❌ خطأ: ' + error.message, 'error');
+  } else {
+    toast('✅ تم نشر المقالة بنجاح!', 'success');
+    document.getElementById('b-title').value = '';
+    document.getElementById('b-content').value = '';
+    document.getElementById('b-cat').value = '';
+    document.getElementById('b-status').value = 'published';
+    document.getElementById('blog-img-data').value = '';
+    document.getElementById('blog-preview').style.display = 'none';
+  }
+}
+
+// ===== LOAD DEALS TABLE =====
+async function loadDealsTable() {
+  const wrap = document.getElementById('deals-table-wrap');
+  wrap.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+  const { data, error } = await sb.from('deals').select('*').order('created_at', { ascending: false });
+  if (error) { wrap.innerHTML = `<div class="loading" style="color:red">❌ خطأ: ${error.message}</div>`; return; }
+  if (!data || data.length === 0) { wrap.innerHTML = '<div class="empty"><div class="icon">🏷️</div><p>لا توجد عروض بعد</p></div>'; return; }
+  _allDeals = data;
+  const searchInput = document.getElementById('deals-search-input');
+  if (searchInput && searchInput.value.trim()) {
+    filterDealsTable(searchInput.value);
+  } else {
+    renderDealsTable(_allDeals);
+  }
+}
+async function loadBlogTable() {
+  const wrap = document.getElementById('blog-table-wrap');
+  wrap.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+  const { data, error } = await sb.from('blogs').select('*').order('created_at', { ascending: false });
+  if (error) { wrap.innerHTML = `<div class="loading" style="color:red">❌ خطأ: ${error.message}</div>`; return; }
+  if (!data || data.length === 0) { wrap.innerHTML = '<div class="empty"><div class="icon">📝</div><p>لا توجد مقالات بعد</p></div>'; return; }
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>الصورة</th><th>العنوان</th><th>القسم</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+      <tbody>${data.map(b => `
+        <tr>
+          <td><div class="deal-img-cell">${b.image ? `<img src="${b.image}" alt="">` : '📝'}</div></td>
+          <td><strong>${b.title}</strong></td>
+          <td><span class="badge badge-blue">${b.category || '—'}</span></td>
+          <td>${b.status === 'published' ? '<span class="badge badge-green">منشور</span>' : '<span class="badge badge-blue">مسودة</span>'}</td>
+          <td style="font-size:12px;color:#64748b">${new Date(b.created_at).toLocaleDateString('ar-EG')}</td>
+          <td><button class="btn-save btn-red" onclick="deleteBlog('${b.id}')">🗑️ حذف</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ===== DELETE =====
+async function deleteDeal(id) {
+  if (!confirm('هل أنت متأكد من حذف هذا العرض؟')) return;
+  const { error } = await sb.from('deals').delete().eq('id', id);
+  if (error) toast('❌ خطأ في الحذف', 'error');
+  else { toast('🗑️ تم الحذف', 'success'); loadDealsTable(); }
+}
+
+async function deleteBlog(id) {
+  if (!confirm('هل أنت متأكد من حذف هذه المقالة؟')) return;
+  const { error } = await sb.from('blogs').delete().eq('id', id);
+  if (error) toast('❌ خطأ في الحذف', 'error');
+  else { toast('🗑️ تم الحذف', 'success'); loadBlogTable(); }
+}
+
+// ===== TOGGLE EXPIRY =====
+function toggleExpiry() {
+  const status = document.getElementById('d-status').value;
+  document.getElementById('expiry-section').style.display = status === 'hot' ? 'block' : 'none';
+}
+
+// ===== GEOCODE ADDRESS =====
+let geocodeTimer = null;
+document.addEventListener('DOMContentLoaded', () => {
+  const addrInput = document.getElementById('d-address');
+  if (addrInput) {
+    addrInput.addEventListener('input', () => {
+      clearTimeout(geocodeTimer);
+      geocodeTimer = setTimeout(geocodeAddress, 800);
+    });
+  }
+});
+
+async function geocodeAddress() {
+  const addr = document.getElementById('d-address').value.trim();
+  const status = document.getElementById('geo-status');
+  if (!addr || addr.length < 5) { status.textContent = ''; return; }
+  status.textContent = '⏳ جاري تحديد الموقع...';
+  status.style.color = '#94a3b8';
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr + ' مصر')}&format=json&limit=1`);
+    const data = await res.json();
+    if (data && data.length > 0) {
+      document.getElementById('d-lat').value = data[0].lat;
+      document.getElementById('d-lng').value = data[0].lon;
+      status.textContent = '✅ تم تحديد الموقع: ' + data[0].display_name.split(',').slice(0,2).join(',');
+      status.style.color = '#16a34a';
+    } else {
+      status.textContent = '⚠️ مش قادر أحدد الموقع، جرب كتابة العنوان بشكل أوضح';
+      status.style.color = '#f97316';
+    }
+  } catch(e) {
+    status.textContent = '❌ خطأ في تحديد الموقع';
+    status.style.color = '#ef4444';
+  }
+}
+
+// ===== EDIT DEAL =====
+async function editDeal(id) {
+  const { data, error } = await sb.from('deals').select('*').eq('id', id).single();
+  if (error || !data) { toast('❌ خطأ في تحميل العرض', 'error'); return; }
+  
+  // scroll to form
+  document.querySelector('#tab-deals .page-title') && window.scrollTo(0,0);
+  // switch to add tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-deals').classList.add('active');
+  // activate deals nav btn
+  document.querySelectorAll('.nav-btn').forEach(b => { if(b.textContent.includes('إدارة العروض')) b.classList.add('active'); });
+
+  // fill form
+  document.getElementById('d-edit-id').value = data.id;
+  document.getElementById('d-name').value = data.name || '';
+  document.getElementById('d-discount').value = data.discount || '';
+  document.getElementById('d-desc').value = data.description || '';
+  document.getElementById('d-link').value = data.link || '';
+  document.getElementById('d-price').value = data.price || '';
+  document.getElementById('d-coupon').value = data.coupon_code || '';
+  document.getElementById('d-cat').value = data.category || '';
+  document.getElementById('d-store-name').value = data.store_name || '';
+  // set category THEN fill subcats THEN set subcategory value
+  if (data.category) {
+    fillSubcats();
+    setTimeout(() => { document.getElementById('d-subcat').value = data.subcategory || ''; }, 200);
+  }
+  document.getElementById('d-status').value = data.status || 'active';
+  document.getElementById('d-address').value = data.address || '';
+  document.getElementById('d-expiry').value = data.expires_at ? data.expires_at.slice(0,16) : '';
+  setDealType(data.is_offline ? 'offline' : 'online');
+  // restore maps link display if coords exist
+  document.getElementById('d-maps-link').value = '';
+  const coordsDisplay = document.getElementById('coords-display');
+  
+  if (data.latitude) document.getElementById('d-lat').value = data.latitude;
+  if (data.longitude) document.getElementById('d-lng').value = data.longitude;
+  if (data.latitude && data.longitude) {
+    coordsDisplay.style.display = 'block';
+    coordsDisplay.innerHTML = `✅ إحداثيات محفوظة — Lat: ${data.latitude} | Lng: ${data.longitude}`;
+  } else {
+    coordsDisplay.style.display = 'none';
+  }
+  if (data.address) {
+    document.getElementById('geo-status').textContent = '✅ موقع محفوظ مسبقاً';
+    document.getElementById('geo-status').style.color = '#16a34a';
+  }
+  if (data.image) {
+    document.getElementById('deal-img-data').value = data.image;
+    document.getElementById('deal-preview').src = data.image;
+    document.getElementById('deal-preview').style.display = 'block';
+    document.getElementById('deal-upload-placeholder').style.display = 'none';
+  }
+  if (data.image2) {
+    document.getElementById('deal-img-data-2').value = data.image2;
+    document.getElementById('deal-preview-2').src = data.image2;
+    document.getElementById('deal-preview-2').style.display = 'block';
+    document.getElementById('deal-upload-placeholder-2').style.display = 'none';
+  }
+  
+  toggleLocation(true);
+  toggleExpiry();
+  
+  if (data.governorate) {
+    document.getElementById('d-gov').value = data.governorate;
+    fillCities();
+    setTimeout(() => { document.getElementById('d-city').value = data.city || ''; }, 100);
+  }
+
+  document.querySelector('#tab-deals .btn-save').textContent = '✏️ تحديث العرض';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toast('✏️ جاهز للتعديل', 'success');
+}
+
+// ===== EXTRACT COORDS FROM GOOGLE MAPS LINK =====
+function extractCoordsFromMaps(url) {
+  if (!url || url.length < 10) return;
+  const display = document.getElementById('coords-display');
+
+  // Try all known Google Maps URL patterns
+  const patterns = [
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,           // @lat,lng
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,       // !3d lat !4d lng
+    /ll=(-?\d+\.\d+),(-?\d+\.\d+)/,         // ll=lat,lng
+    /q=(-?\d+\.\d+),(-?\d+\.\d+)/,          // q=lat,lng
+    /place\/([^/]+)\/@(-?\d+\.\d+),(-?\d+\.\d+)/, // place/@lat,lng
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      // pattern[4] has 3 groups (place pattern), others have 2
+      const lat = match[2] || match[1];
+      const lng = match[3] || match[2];
+      if (lat && lng && Math.abs(parseFloat(lat)) <= 90 && Math.abs(parseFloat(lng)) <= 180) {
+        document.getElementById('d-lat').value = parseFloat(lat).toFixed(6);
+        document.getElementById('d-lng').value = parseFloat(lng).toFixed(6);
+        display.style.display = 'block';
+        display.innerHTML = `✅ تم استخراج الإحداثيات بنجاح<br>📍 Latitude: <strong>${parseFloat(lat).toFixed(6)}</strong> | Longitude: <strong>${parseFloat(lng).toFixed(6)}</strong>`;
+        document.getElementById('geo-status').textContent = '✅ إحداثيات Google Maps محفوظة';
+        document.getElementById('geo-status').style.color = '#16a34a';
+        return;
+      }
+    }
+  }
+
+  // Not found in URL directly — might be a short link, show message
+  display.style.display = 'block';
+  display.style.background = '#fef2f2';
+  display.style.borderColor = '#fca5a5';
+  display.style.color = '#dc2626';
+  display.innerHTML = '⚠️ مش قادر أستخرج الإحداثيات من اللينك ده. جرب: Google Maps → شارك → انسخ اللينك الكامل (مش المختصر)';
+}
+
+
+let _allDeals = [];
+
+function renderDealsTable(deals) {
+  const wrap = document.getElementById('deals-table-wrap');
+  const count = document.getElementById('deals-search-count');
+  if (!deals || deals.length === 0) {
+    wrap.innerHTML = '<div class="empty"><div class="icon">🏷️</div><p>مفيش نتائج</p></div>';
+    if(count) count.textContent = '';
+    return;
+  }
+  if(count) count.textContent = deals.length + ' عرض';
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>الصورة</th><th>الاسم</th><th>القسم</th><th>الخصم</th><th>المحافظة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody>${deals.map(d => `
+        <tr>
+          <td><div class="deal-img-cell">${d.image ? `<img src="${d.image}" alt="">` : '🏷️'}</div></td>
+          <td><strong>${d.name}</strong>${d.store_name ? '<br><span style="font-size:11px;color:#94a3b8;">'+d.store_name+'</span>' : ''}</td>
+          <td><span class="badge badge-blue">${d.is_offline ? '📍 ' : '🌐 '}${d.category || '—'}</span></td>
+          <td><strong style="color:#2563eb;font-size:16px">${d.discount}%</strong></td>
+          <td style="font-size:12px;color:#64748b">${d.governorate || '—'} ${d.city ? '/ ' + d.city : ''}</td>
+          <td>${d.status === 'hot' ? '<span class="badge" style="background:#fef2f2;color:#ef4444">🔥 ساخن</span>' : d.status === 'active' ? '<span class="badge badge-green">نشط</span>' : '<span class="badge" style="background:#f1f5f9;color:#94a3b8">منتهي</span>'}</td>
+          <td style="display:flex;gap:6px;"><button class="btn-save" style="background:#eff6ff;color:#2563eb;" onclick="editDeal('${d.id}')">✏️ تعديل</button><button class="btn-save btn-red" onclick="deleteDeal('${d.id}')">🗑️ حذف</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function filterDealsTable(q) {
+  if (!q.trim()) { renderDealsTable(_allDeals); return; }
+  const term = q.trim().toLowerCase();
+  const filtered = _allDeals.filter(d =>
+    (d.name || '').toLowerCase().includes(term) ||
+    (d.category || '').toLowerCase().includes(term) ||
+    (d.governorate || '').toLowerCase().includes(term) ||
+    (d.city || '').toLowerCase().includes(term) ||
+    (d.store_name || '').toLowerCase().includes(term) ||
+    (d.status || '').toLowerCase().includes(term)
+  );
+  renderDealsTable(filtered);
+}
+
+// ===== PARTNERSHIPS =====
+let currentPFilter = 'pending';
+
+async function loadPartnerships(filter = 'pending') {
+  currentPFilter = filter;
+  const wrap = document.getElementById('partnerships-wrap');
+  wrap.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+
+  // Update filter button styles
+  ['pending','active','rejected'].forEach(f => {
+    const btn = document.getElementById('pf-' + f);
+    if (!btn) return;
+    if (f === filter) {
+      btn.style.borderColor = '#f97316';
+      btn.style.background = '#fff7ed';
+      btn.style.color = '#f97316';
+    } else {
+      btn.style.borderColor = '#e2e8f0';
+      btn.style.background = 'white';
+      btn.style.color = '#64748b';
+    }
+  });
+
+  const { data, error } = await sb.from('partnerships').select('*').eq('status', filter).order('created_at', { ascending: false });
+
+  if (error) { wrap.innerHTML = `<div class="loading" style="color:red">❌ ${error.message}</div>`; return; }
+  if (!data || data.length === 0) {
+    wrap.innerHTML = `<div class="empty"><div class="icon">🤝</div><p>لا توجد طلبات ${filter === 'pending' ? 'في الانتظار' : filter === 'active' ? 'تمت الموافقة عليها' : 'مرفوضة'}</p></div>`;
+    return;
+  }
+
+  wrap.innerHTML = data.map(p => `
+    <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;border:1.5px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        ${p.image ? `<img src="${p.image}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">` : '<div style="width:80px;height:80px;border-radius:12px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">🏪</div>'}
+        <div style="flex:1;min-width:200px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+            <strong style="font-size:17px;">${p.store_name || p.title}</strong>
+            <span style="background:${p.status==='pending'?'#fff7ed':p.status==='active'?'#f0fdf4':'#fef2f2'};color:${p.status==='pending'?'#f97316':p.status==='active'?'#16a34a':'#dc2626'};font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">
+              ${p.status==='pending'?'⏳ انتظار':p.status==='active'?'✅ موافقة':'❌ مرفوض'}
+            </span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;font-size:13px;color:#64748b;margin-bottom:12px;">
+            <span>👤 <strong>${p.contact_name || '—'}</strong></span>
+            <span>📱 <a href="https://wa.me/${(p.whatsapp||'').replace(/\D/g,'')}?text=مرحباً+${encodeURIComponent(p.contact_name||'')}+%F0%9F%91%8B" target="_blank" style="color:#25d366;font-weight:700;">${p.whatsapp || '—'}</a></span>
+            <span>📂 ${p.category || '—'} ${p.subcategory ? '· '+p.subcategory : ''}</span>
+            <span>💰 ${p.price_before ? p.price_before+' ج ← '+p.price_after+' ج' : '—'}</span>
+            <span>🔗 ${p.is_offline ? '📍 جمبي' : '🌐 أونلاين'}</span>
+            <span>📅 ${new Date(p.created_at).toLocaleDateString('ar-EG')}</span>
+          </div>
+          ${p.description ? `<div style="font-size:13px;color:#475569;background:#f8fafc;border-radius:8px;padding:10px;margin-bottom:12px;line-height:1.6;">${p.description}</div>` : ''}
+          ${p.link ? `<a href="${p.link}" target="_blank" style="font-size:12px;color:#2563eb;">🔗 ${p.link}</a>` : ''}
+        </div>
+      </div>
+
+      ${p.status === 'pending' ? `
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+        <button onclick="approvePartnership('${p.id}')" style="flex:1;min-width:140px;padding:12px;background:#16a34a;color:white;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">
+          ✅ موافقة ونشر
+        </button>
+        <button onclick="editAndApprove('${p.id}')" style="flex:1;min-width:140px;padding:12px;background:#2563eb;color:white;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">
+          ✏️ تعديل قبل النشر
+        </button>
+        <button onclick="rejectPartnership('${p.id}')" style="flex:1;min-width:140px;padding:12px;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">
+          ❌ رفض
+        </button>
+      </div>` : p.status === 'active' ? `
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button onclick="rejectPartnership('${p.id}')" style="padding:10px 20px;background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;border-radius:10px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">
+          🗑️ سحب الموافقة
+        </button>
+      </div>` : `
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button onclick="approvePartnership('${p.id}')" style="padding:10px 20px;background:#f0fdf4;color:#16a34a;border:1.5px solid #86efac;border-radius:10px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">
+          ✅ إعادة الموافقة
+        </button>
+      </div>`}
+    </div>
+  `).join('');
+}
+
+async function approvePartnership(id) {
+  // 1. Get partnership data
+  const { data: p, error: e1 } = await sb.from('partnerships').select('*').eq('id', id).single();
+  if (e1) { toast('❌ خطأ في جلب البيانات', 'error'); return; }
+
+  // 2. Insert into deals table
+  const dealData = {
+    name: p.title,
+    description: p.description,
+    category: p.category,
+    subcategory: p.subcategory,
+    is_offline: p.is_offline,
+    status: 'active',
+    discount: p.discount || 0,
+    price: p.price_after ? parseInt(p.price_after) : null,
+    image: p.image || '',
+    link: p.link || 'https://wa.me/201125472360',
+    coupon_code: p.coupon_code || null,
+    store_name: p.store_name,
+    address: p.address || '',
+    governorate: p.governorate || '',
+    city: p.city || '',
+    latitude: p.latitude || null,
+    longitude: p.longitude || null,
+  };
+
+  const { error: e2 } = await sb.from('deals').insert(dealData);
+  if (e2) { toast('❌ ' + e2.message, 'error'); return; }
+
+  // 3. Update partnership status
+  await sb.from('partnerships').update({ status: 'active' }).eq('id', id);
+
+  toast('✅ تمت الموافقة ونشر العرض!', 'success');
+  loadPartnerships(currentPFilter);
+  updatePendingBadge();
+}
+
+async function editAndApprove(id) {
+  const { data: p, error } = await sb.from('partnerships').select('*').eq('id', id).single();
+  if (error) { toast('❌ خطأ', 'error'); return; }
+
+  // Switch to deals tab and pre-fill form
+  showTab('deals', document.querySelector('.nav-btn'));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.includes('إدارة العروض'));
+  });
+
+  // Pre-fill the deal form with partnership data
+  setTimeout(() => {
+    setDealType(p.is_offline ? 'offline' : 'online');
+    document.getElementById('d-name').value = p.title || '';
+    document.getElementById('d-desc').value = p.description || '';
+    document.getElementById('d-link').value = p.link || '';
+    document.getElementById('d-price').value = p.price_after || '';
+    document.getElementById('d-store-name').value = p.store_name || '';
+    document.getElementById('d-address').value = p.address || '';
+    if (p.governorate) {
+      document.getElementById('d-gov').value = p.governorate;
+      fillCities();
+      setTimeout(() => { document.getElementById('d-city').value = p.city || ''; }, 200);
+    }
+    document.getElementById('d-cat').value = p.category || '';
+    if (p.category) {
+      fillSubcats();
+      setTimeout(() => { document.getElementById('d-subcat').value = p.subcategory || ''; }, 200);
+    }
+    if (p.image) {
+      document.getElementById('deal-preview').src = p.image;
+      document.getElementById('deal-preview').style.display = 'block';
+      document.getElementById('deal-img-data').value = p.image;
+      document.getElementById('deal-upload-placeholder').style.display = 'none';
+    }
+    // Store partnership id to mark approved after save
+    document.getElementById('d-edit-id').dataset.partnershipId = id;
+    toast('📋 تم تحميل بيانات الشراكة — عدّل وانشر', 'success');
+  }, 300);
+}
+
+async function rejectPartnership(id) {
+  if (!confirm('هل تريد رفض هذا الطلب؟')) return;
+  await sb.from('partnerships').update({ status: 'rejected' }).eq('id', id);
+  toast('🗑️ تم رفض الطلب', 'success');
+  loadPartnerships(currentPFilter);
+  updatePendingBadge();
+}
+
+async function updatePendingBadge() {
+  const { count } = await sb.from('partnerships').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+  const badge = document.getElementById('pending-badge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ===== AUTO EXPIRE HOT DEALS =====
+async function checkExpiredDeals() {
+  const now = new Date().toISOString();
+  const { data } = await sb.from('deals').select('id').eq('status','hot').lt('expires_at', now).not('expires_at', 'is', null);
+  if (data && data.length > 0) {
+    const ids = data.map(d => d.id);
+    await sb.from('deals').update({ status: 'expired' }).in('id', ids);
+  }
+}
+checkExpiredDeals();
+setInterval(checkExpiredDeals, 60000);
+
+// ===== PASSWORD =====
+const ADMIN_PW = 'Shekss@2025';
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PW) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = '';
+    document.getElementById('main-area').style.display = '';
+    sessionStorage.setItem('shekss_auth', '1');
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+// Auto-login if already authed this session
+document.addEventListener('DOMContentLoaded', () => { setDealType('online'); });
+
+if (sessionStorage.getItem('shekss_auth') === '1') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-content').style.display = '';
+  document.getElementById('main-area').style.display = '';
+}
+
+// ===== COUPONS TAB =====
+// ===== COUPONS CRUD =====
+async function saveCoupon() {
+  const site = document.getElementById('cp-site').value.trim();
+  const code = document.getElementById('cp-code').value.trim().toUpperCase();
+  if (!site || !code) { toast('⚠️ اسم الموقع والكود مطلوبان', 'error'); return; }
+  const editId = document.getElementById('cp-edit-id').value;
+  const data = {
+    site_name: site,
+    code: code,
+    discount_min: document.getElementById('cp-discount-min').value ? parseFloat(document.getElementById('cp-discount-min').value) : null,
+    discount_max: document.getElementById('cp-discount-max').value ? parseFloat(document.getElementById('cp-discount-max').value) : null,
+    discount: document.getElementById('cp-discount-min').value ? parseFloat(document.getElementById('cp-discount-min').value) : null,
+    type: document.getElementById('cp-type').value,
+    expires_at: document.getElementById('cp-expires').value ? new Date(document.getElementById('cp-expires').value).toISOString() : null,
+    logo: document.getElementById('cp-logo').value.trim() || null
+  };
+  let error;
+  if (editId) {
+    ({ error } = await sb.from('coupons').update(data).eq('id', editId));
+  } else {
+    ({ error } = await sb.from('coupons').insert([data]));
+  }
+  if (error) { toast('❌ خطأ: ' + error.message, 'error'); return; }
+  toast('✅ تم حفظ الكوبون!', 'success');
+  resetCouponForm();
+  loadCouponsTab();
+}
+
+function resetCouponForm() {
+  document.getElementById('cp-edit-id').value = '';
+  document.getElementById('cp-site').value = '';
+  document.getElementById('cp-code').value = '';
+  document.getElementById('cp-discount-min').value = '';
+  document.getElementById('cp-discount-max').value = '';
+  document.getElementById('cp-type').value = 'خصم';
+  document.getElementById('cp-expires').value = '';
+  document.getElementById('cp-logo').value = '';
+  document.getElementById('cp-save-btn').textContent = '💾 حفظ الكوبون';
+}
+
+async function editCoupon(id) {
+  const { data } = await sb.from('coupons').select('*').eq('id', id).single();
+  if (!data) return;
+  document.getElementById('cp-edit-id').value = data.id;
+  document.getElementById('cp-site').value = data.site_name || '';
+  document.getElementById('cp-code').value = data.code || '';
+  document.getElementById('cp-discount-min').value = data.discount_min || data.discount || '';
+  document.getElementById('cp-discount-max').value = data.discount_max || data.discount || '';
+  document.getElementById('cp-type').value = data.type || 'خصم';
+  document.getElementById('cp-expires').value = data.expires_at ? data.expires_at.slice(0,16) : '';
+  document.getElementById('cp-logo').value = data.logo || '';
+  document.getElementById('cp-save-btn').textContent = '✏️ تحديث الكوبون';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function deleteCoupon(id) {
+  if (!confirm('هل أنت متأكد من حذف هذا الكوبون؟')) return;
+  const { error } = await sb.from('coupons').delete().eq('id', id);
+  if (error) toast('❌ خطأ في الحذف', 'error');
+  else { toast('🗑️ تم الحذف', 'success'); loadCouponsTab(); }
+}
+
+async function loadCouponsTab() {
+  const wrap = document.getElementById('coupons-table-wrap');
+  wrap.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+  const { data, error } = await sb.from('coupons').select('*').order('created_at',{ascending:false});
+  if (error) { wrap.innerHTML = `<div class="loading" style="color:red">❌ خطأ: ${error.message}</div>`; return; }
+  if (!data || data.length === 0) { wrap.innerHTML = '<div class="empty"><div class="icon">🎟️</div><p>لا توجد كوبونات بعد — أضف أول كوبون!</p></div>'; return; }
+  const now = new Date();
+  wrap.innerHTML = `<table>
+    <thead><tr><th>الموقع</th><th>الكود</th><th>النسبة</th><th>النوع</th><th>الانتهاء</th><th>إجراءات</th></tr></thead>
+    <tbody>${data.map(d => {
+      const expired = d.expires_at && new Date(d.expires_at) < now;
+      return `<tr style="${expired ? 'opacity:0.5;' : ''}">
+        <td><strong>${d.site_name}</strong>${d.logo ? ` <img src="${d.logo}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:4px;">` : ''}</td>
+        <td><span style="font-family:monospace;font-size:15px;font-weight:900;color:#2563eb;letter-spacing:2px;background:#eff6ff;padding:4px 10px;border-radius:6px;">${d.code}</span></td>
+        <td><strong style="color:#16a34a;">${d.discount_min && d.discount_max && d.discount_min !== d.discount_max ? d.discount_min+'% — '+d.discount_max+'%' : d.discount ? d.discount+'%' : '—'}</strong></td>
+        <td><span class="badge badge-blue">${d.type || '—'}</span></td>
+        <td style="font-size:12px;color:${expired ? '#ef4444' : '#64748b'}">${d.expires_at ? (expired ? '❌ منتهي' : '✅ ' + new Date(d.expires_at).toLocaleDateString('ar-EG')) : '—'}</td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn-save" style="background:#eff6ff;color:#2563eb;" onclick="editCoupon('${d.id}')">✏️</button>
+          <button class="btn-save btn-red" onclick="deleteCoupon('${d.id}')">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ===== SUBCATEGORIES =====
+const CAT_SUBS = {
+  // أونلاين
+  'electronics': ['موبايلات','لابتوبات','سماعات','Gaming','ساعات ذكية','تلفزيونات'],
+  'fashion': ['رجالي','حريمي','أطفال','أحذية','شنط','إكسسوارات'],
+  'home': ['أجهزة منزلية','ديكور','مطبخ','مفروشات'],
+  'beauty': ['ميكب','عناية بالبشرة','عطور'],
+  'supermarket': ['منتجات غذائية','مشروبات','منظفات'],
+  'kids': ['ألعاب','ملابس أطفال','تعليم'],
+  'sports': ['ملابس رياضية','معدات','تغذية'],
+  'travel': ['فنادق','تذاكر','باقات'],
+  'subscriptions': ['ستريمينج','تعليم','سوفتوير'],
+  // جمبي
+  'restaurants': ['فاست فود','مأكولات بحرية','مشاوي','أكل صحي'],
+  'cafes': ['قهوة','عصائر','حلويات'],
+  'shoes': ['رياضي','رسمي','أطفال'],
+  'gyms': ['اشتراكات','كلاسات','تريننج'],
+  'services': ['تجميل','صيانة','طب'],
+  'hotels': ['سياحة','منتجعات','شاليهات'],
+  'cars': ['تأجير','صيانة','إكسسوارات'],
+};
+function fillSubcats() {
+  const cat = document.getElementById('d-cat').value;
+  const sel = document.getElementById('d-subcat');
+  const subs = CAT_SUBS[cat] || [];
+  sel.innerHTML = '<option value="">اختر القسم الفرعي</option>' + subs.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+
+// ===== TOAST =====
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+
+// ===== MESSAGES =====
+let allMessages = [];
+let msgFilter = 'all';
+
+async function loadMessages() {
+  const wrap = document.getElementById('msgs-container');
+  wrap.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">⏳ جاري التحميل...</div>';
+  
+  const { data, error } = await sb.from('messages').select('*').order('created_at', { ascending: false });
+  
+  if (error) { 
+    wrap.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ خطأ: ' + error.message + '</div>'; 
+    return; 
+  }
+  
+  allMessages = data || [];
+  renderMessages();
+  updateUnreadBadge();
+}
+
+function renderMessages() {
+  const wrap = document.getElementById('msgs-container');
+  const countEl = document.getElementById('msgs-count');
+  
+  let filtered = allMessages;
+  if (msgFilter === 'unread') filtered = allMessages.filter(m => !m.read);
+  
+  countEl.textContent = filtered.length + ' رسالة' + (msgFilter === 'unread' ? ' غير مقروءة' : '');
+  
+  if (filtered.length === 0) {
+    wrap.innerHTML = '<div style="text-align:center;padding:60px;color:#94a3b8;"><div style="font-size:48px;margin-bottom:12px;">✉️</div><p>لا توجد رسائل</p></div>';
+    return;
+  }
+  
+  wrap.innerHTML = filtered.map(m => `
+    <div class="msg-card ${m.read ? '' : 'unread'}" id="msg-${m.id}">
+      <div class="msg-head">
+        <div>
+          <div class="msg-name">
+            ${!m.read ? '<span class="msg-unread-dot"></span>' : ''}
+            ${m.name || 'بدون اسم'}
+          </div>
+          <div class="msg-email">📧 ${m.email || '—'}</div>
+        </div>
+        <div class="msg-meta">
+          <div class="msg-type">${m.type || 'استفسار'}</div>
+          <div>${m.created_at ? new Date(m.created_at).toLocaleDateString('ar-EG') + ' - ' + new Date(m.created_at).toLocaleTimeString('ar-EG', {hour:'2-digit',minute:'2-digit'}) : ''}</div>
+        </div>
+      </div>
+      <div class="msg-body">${m.msg || '—'}</div>
+      <div class="msg-actions">
+        ${!m.read ? `<button class="btn-save btn-edit" onclick="markRead('${m.id}')">✓ تعليم كمقروءة</button>` : '<span style="font-size:12px;color:#10b981;font-weight:700;">✓ مقروءة</span>'}
+        <a href="mailto:${m.email}" class="btn-save" style="background:#ecfdf5;color:#10b981;text-decoration:none;padding:7px 14px;font-size:12px;">📧 رد بالإيميل</a>
+        <a href="https://wa.me/${(m.email||'').includes('@') ? '' : m.email}" class="btn-save" style="background:#f0fdf4;color:#16a34a;text-decoration:none;padding:7px 14px;font-size:12px;display:${m.phone ? 'inline-flex' : 'none'};">💬 واتساب</a>
+        <button class="btn-save btn-red" onclick="deleteMsg('${m.id}')">🗑️ حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterMsgs(type) {
+  msgFilter = type;
+  renderMessages();
+}
+
+async function markRead(id) {
+  const { error } = await sb.from('messages').update({ read: true }).eq('id', id);
+  if (!error) {
+    const m = allMessages.find(x => x.id === id);
+    if (m) m.read = true;
+    renderMessages();
+    updateUnreadBadge();
+    toast('✅ تم التعليم كمقروءة', 'success');
+  }
+}
+
+async function markAllRead() {
+  const { error } = await sb.from('messages').update({ read: true }).eq('read', false);
+  if (!error) {
+    allMessages.forEach(m => m.read = true);
+    renderMessages();
+    updateUnreadBadge();
+    toast('✅ تم تعليم الكل كمقروء', 'success');
+  }
+}
+
+async function deleteMsg(id) {
+  if (!confirm('هل أنت متأكد من حذف هذه الرسالة؟')) return;
+  const { error } = await sb.from('messages').delete().eq('id', id);
+  if (!error) {
+    allMessages = allMessages.filter(m => m.id !== id);
+    renderMessages();
+    updateUnreadBadge();
+    toast('🗑️ تم الحذف', 'success');
+  }
+}
+
+function updateUnreadBadge() {
+  const unread = allMessages.filter(m => !m.read).length;
+  const badge = document.getElementById('unread-badge');
+  if (badge) {
+    badge.textContent = unread;
+    badge.style.display = unread > 0 ? 'inline-block' : 'none';
+  }
+}
+
+// Load pending badge on startup
+window.addEventListener('load', () => { setTimeout(updatePendingBadge, 2000); });
+</script>
+</body>
+</html>
