@@ -1,0 +1,54 @@
+<!--
+  ============================================================
+  COMPONENT: NAVBAR
+  components/navbar.html
+  ============================================================
+  الـ navbar الرئيسي للموقع.
+  مُدمج في index.html داخل <nav id="main-nav">.
+  
+  التعديلات المطبقة على الـ original:
+  - إزالة: العروض (deals) من nav-links
+  - إزالة: الشراكات (partners) من nav-links
+  - إضافة: من نحن (about)
+  - إضافة: الأسئلة الشائعة (faq)
+  - تحويل زر "استكشف العروض" → "تسجيل الدخول"
+  ============================================================
+-->
+
+<!-- MOBILE NAV -->
+<div class="mob-nav" id="mob-nav">
+  <div class="mob-nav-header">
+    <img src="logo.png" alt="Shekss" style="height:46px;width:auto;object-fit:contain;">
+    <button onclick="toggleMob()" style="background:none;border:none;font-size:24px;cursor:pointer;">✕</button>
+  </div>
+  <a onclick="showPage('home');toggleMob()">🏠 الرئيسية</a>
+  <a onclick="showPage('expired');toggleMob()">📦 عروض منتهية</a>
+  <a onclick="showPage('coupons');toggleMob()">🎟️ كوبونات</a>
+  <a onclick="showPage('blog');toggleMob()">📝 المدونة</a>
+  <a onclick="showPage('about');toggleMob()">👋 من نحن</a>
+  <a onclick="showPage('faq');toggleMob()">❓ الأسئلة الشائعة</a>
+  <a onclick="showPage('contact');toggleMob()">✉️ تواصل معنا</a>
+  <a onclick="showPage('login');toggleMob()" style="background:var(--blue);color:white;margin-top:8px;border-radius:12px;">🔑 تسجيل الدخول</a>
+</div>
+
+<!-- DESKTOP NAV -->
+<nav class="nav" id="main-nav" style="display:none;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="mob-menu-btn" onclick="toggleMob()">☰</button>
+    <span class="nav-logo" onclick="showPage('home')">
+      <img src="logo.png" alt="Shekss" style="height:48px;width:auto;object-fit:contain;display:block;">
+    </span>
+  </div>
+  <div class="nav-links">
+    <a id="nav-home"    onclick="showPage('home')">الرئيسية</a>
+    <a id="nav-expired" onclick="showPage('expired')">📦 عروض منتهية</a>
+    <a id="nav-coupons" onclick="showPage('coupons')">🎟️ كوبونات</a>
+    <a id="nav-blog"    onclick="showPage('blog')">المدونة</a>
+    <a id="nav-about"   onclick="showPage('about')">من نحن</a>
+    <a id="nav-faq"     onclick="showPage('faq')">الأسئلة الشائعة</a>
+    <a id="nav-contact" onclick="showPage('contact')">تواصل معنا</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav" onclick="showPage('login')">🔑 تسجيل الدخول</button>
+  </div>
+</nav>

@@ -1,0 +1,74 @@
+<!--
+  ============================================================
+  COMPONENT: DEAL CARD
+  components/deal-card.html
+  ============================================================
+  هذا ملف مرجعي يشرح بنية بطاقة العرض.
+  الكود الفعلي موجود في: scripts/deals.js → dealCard()
+  
+  البنية:
+  ┌─────────────────────────┐
+  │  .dimg (صورة + badges)  │
+  │    - badge-disc (%)      │
+  │    - badge-hot           │
+  │    - badge-offline       │
+  │    - expired overlay     │
+  │    - dimg-slider (opt.)  │
+  ├─────────────────────────┤
+  │  .dbody                  │
+  │    - .dcat (قسم)         │
+  │    - .store-name-badge   │
+  │    - .dname              │
+  │    - .ddesc              │
+  │    - .dprice-wrap        │
+  │    - .dist-badge         │
+  │    - .deal-countdown     │
+  │    - .coupon-wrap        │
+  │    - .card-footer        │
+  │        └ .btn-deal       │
+  └─────────────────────────┘
+  
+  المتغيرات:
+  - d         : بيانات العرض من Supabase
+  - mode      : 'online' | 'offline'
+  - isExpired : boolean (للعروض المنتهية)
+  
+  للاستخدام:
+    dealCard(dealObject, 'online')
+    dealCard(dealObject, 'offline', true)  // expired
+  ============================================================
+-->
+
+<!--
+  TEMPLATE REFERENCE (ليس كود فعلي — انظر deals.js):
+
+  <div class="deal-card">
+    <div class="dimg" style="position:relative;">
+      [صورة أو slider]
+      <span class="badge-disc">{discount}%</span>
+      <span class="badge-hot">ساخن 🔥</span>         <!-- إذا status=hot -->
+      <span class="badge-offline">📍 جمبي</span>     <!-- إذا offline -->
+      [expired overlay]                               <!-- إذا منتهي -->
+    </div>
+    <div class="dbody">
+      <div class="dcat">{category} · {subcategory}</div>
+      <div class="store-name-badge">🏪 {store_name}</div>  <!-- offline فقط -->
+      <div class="dname">{name}</div>
+      <div class="ddesc">{description}</div>
+      <div class="dprice-wrap">
+        <span class="dprice-old">{price} ج</span>
+        <span class="dprice-new">{after_discount} ج</span>
+        <span class="dprice-save">وفّر X ج</span>
+      </div>
+      <div class="dist-badge">📍 على بعد X كم</div>    <!-- offline + location -->
+      <div class="deal-countdown" id="cd-{id}">...</div>  <!-- عند وجود expires_at -->
+      <div class="coupon-wrap">
+        <span class="coupon-code">{coupon_code}</span>
+        <button class="coupon-copy">نسخ</button>
+      </div>
+      <div class="card-footer">
+        <button class="btn-deal">الحق الفرصة 🔥</button>
+      </div>
+    </div>
+  </div>
+-->
